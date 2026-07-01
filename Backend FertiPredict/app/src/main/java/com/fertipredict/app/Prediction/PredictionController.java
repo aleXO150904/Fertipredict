@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@CrossOrigin(origins = {"http://localhost:8080"})
+
 @RestController
 @RequestMapping(value = "/api/v1/prediction")
 @RequiredArgsConstructor
