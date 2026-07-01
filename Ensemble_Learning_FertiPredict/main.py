@@ -63,8 +63,8 @@ class PredictionInput(BaseModel):
 
 @app.post("/predict")
 def predict(data: PredictionInput):
-    # Construir el DataFrame en el mismo orden de columnas que usó el modelo al entrenar
-    input_data = pd.DataFrame([{
+    # Construir el DataFrame con los nombres exactos que espera el modelo
+    input_dict = {
         "Edad_Masculino": data.Edad_Masculino,
         "IMC_Masculino": data.IMC_Masculino,
         "Concentracion_Esperma": data.Concentracion_Esperma,
@@ -76,27 +76,30 @@ def predict(data: PredictionInput):
         "Consumo_Alcohol_Masculino": data.Consumo_Alcohol_Masculino,
         "Nivel_Ejercicio_Masculino": data.Nivel_Ejercicio_Masculino,
         "Tipo_Alimentacion_Masculino": data.Tipo_Alimentacion_Masculino,
+        "Historial_Familiar_Infertilidad_Masculino": data.Historial_Familiar_Infertilidad_Masculino,
 
         "Edad_Femenino": data.Edad_Femenino,
         "IMC_Femenino": data.IMC_Femenino,
         "Ciclo_Menstrual": data.Ciclo_Menstrual,
         "PCOS": data.PCOS,
         "Endometriosis": data.Endometriosis,
-        "Hormona Antimulleriana (amh)": data.Hormona_AMH,
-        "hormona foliculoestimulante (fsh)": data.Hormona_FSH,
+        "Hormona_Antimulleriana_(amh)": data.Hormona_AMH,
+        "hormona_foliculoestimulante_(fsh)": data.Hormona_FSH,
         "Obstruccion_Tubaria": data.Obstruccion_Tubaria,
         "Abortos_Previos": data.Abortos_Previos,
         "Fumador_Femenino": data.Fumador_Femenino,
         "Consumo_Alcohol_Femenino": data.Consumo_Alcohol_Femenino,
         "Nivel_Ejercicio_Femenino": data.Nivel_Ejercicio_Femenino,
         "Tipo_Alimentacion_Femenino": data.Tipo_Alimentacion_Femenino,
-        
-        "Historial_Familiar_Infertilidad_Masculino": data.Historial_Familiar_Infertilidad_Masculino,
         "Historial_Familiar_Infertilidad_Femenino": data.Historial_Familiar_Infertilidad_Femenino
-    }])
+    }
+    input_data = pd.DataFrame([input_dict])
+    
+    # Asegurar que el orden de las columnas sea EXACTAMENTE el mismo con el que se entrenó el modelo
+    input_data = input_data[model.feature_names_in_]
 
-    prediction = model.predict(input_data)[0]
-    probabilities = model.predict_proba(input_data)[0]
+    prediction = model.predict(input_data.values)[0]
+    probabilities = model.predict_proba(input_data.values)[0]
     
     predicted_class = int(prediction)
     risk_labels = {0: "LOW", 1: "MODERATE", 2: "HIGH"}
@@ -107,7 +110,7 @@ def predict(data: PredictionInput):
     base_models = model.estimators_
     shap_explainer = shap.TreeExplainer(base_models[0])
     
-    sv = shap_explainer.shap_values(input_data)
+    sv = shap_explainer.shap_values(input_data.values)
 
     if isinstance(sv, list):
         shap_for_class = sv[predicted_class][0]
