@@ -109,7 +109,12 @@ def predict(data: PredictionInput):
     
     sv = shap_explainer.shap_values(input_data)
 
-    shap_for_class = sv[0, :, predicted_class]
+    if isinstance(sv, list):
+        shap_for_class = sv[predicted_class][0]
+    elif len(sv.shape) == 3:
+        shap_for_class = sv[0, :, predicted_class]
+    else:
+        shap_for_class = sv[0]
 
     feature_names = list(input_data.columns)
     explanation = {
