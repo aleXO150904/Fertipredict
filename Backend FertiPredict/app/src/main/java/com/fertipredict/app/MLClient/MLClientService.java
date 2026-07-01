@@ -15,7 +15,14 @@ public class MLClientService {
     private String mlApiUrl;
  
     public MLPredictionResponse getPrediction(MLPredictionRequest request) {
-        String url = mlApiUrl + "/predict";
+        String baseUrl = mlApiUrl.trim();
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+            baseUrl = "https://" + baseUrl;
+        }
+        String url = baseUrl + "/predict";
         return restTemplate.postForObject(url, request, MLPredictionResponse.class);
     }
 }
