@@ -1,0 +1,486 @@
+/* ============================================================
+   Layout Principal (Sidebar + Content Area)
+   Fiel al mockup de FertiPredict
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0 0 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px 24px 20px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 8px;
+}
+
+.sidebar-brand-icon {
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+}
+
+.sidebar-brand-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+
+.sidebar-brand-sub {
+  font-size: 11px;
+  color: var(--color-ink-soft);
+  margin-top: 1px;
+}
+
+/* ---------- Nav ---------- */
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.sidebar-nav-item.active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.sidebar-nav-item svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* ---------- Sidebar Footer ---------- */
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.sidebar-logout-btn:hover {
+  background-color: #FBEAE4;
+  color: var(--color-error);
+}
+
+.sidebar-logout-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ---------- Main Content ---------- */
+.main-content {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: calc(100% - 240px);
+}
+
+/* ============================================================
+   Página de Predicciones
+   ============================================================ */
+
+.predictions-page {
+  flex: 1;
+  padding: 36px 40px;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page-header-text h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.page-header-text p {
+  font-size: 14px;
+  color: var(--color-ink-soft);
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-light);
+}
+
+.btn-primary svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Search Bar */
+.predictions-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.search-wrapper svg {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-ink-soft);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 13px 10px 38px;
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  transition: border-color 0.15s;
+}
+
+.search-input::placeholder {
+  color: #A8AAA6;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* ============================================================
+   Table
+   ============================================================ */
+
+.predictions-table-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.predictions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.predictions-table thead tr {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.predictions-table th {
+  padding: 13px 20px;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: var(--color-bg);
+}
+
+.predictions-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.1s;
+}
+
+.predictions-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.predictions-table tbody tr:hover {
+  background-color: #f9f8f5;
+}
+
+.predictions-table td {
+  padding: 16px 20px;
+  font-size: 14px;
+  color: var(--color-ink);
+  vertical-align: middle;
+}
+
+/* ID cell */
+.pred-id {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+  font-weight: 600;
+}
+
+/* Couple cell */
+.couple-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.couple-cell-main {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-ink);
+}
+
+.couple-cell-sub {
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+
+/* Date cell */
+.date-cell {
+  font-size: 13.5px;
+  color: var(--color-ink-soft);
+}
+
+/* Risk Badge */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.risk-badge svg {
+  width: 13px;
+  height: 13px;
+}
+
+.risk-badge.high {
+  background-color: #FBEAE4;
+  color: #B3432B;
+}
+
+.risk-badge.medium {
+  background-color: #FDF8E4;
+  color: #9C7E00;
+}
+
+.risk-badge.low {
+  background-color: #E6F4EA;
+  color: #3E7359;
+}
+
+.risk-badge.pending {
+  background-color: #EEF2F7;
+  color: var(--color-ink-soft);
+}
+
+/* Probability bar */
+.prob-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prob-bar-track {
+  width: 80px;
+  height: 6px;
+  background-color: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.prob-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--color-primary);
+  transition: width 0.4s ease;
+}
+
+.prob-bar-fill.high {
+  background-color: #C94B2B;
+}
+
+.prob-bar-fill.medium {
+  background-color: #D4A017;
+}
+
+.prob-bar-fill.low {
+  background-color: var(--color-success);
+}
+
+.prob-value {
+  font-size: 13.5px;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+}
+
+/* Empty state */
+.table-empty {
+  text-align: center;
+  padding: 64px 20px;
+  color: var(--color-ink-soft);
+}
+
+.table-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  opacity: 0.35;
+}
+
+.table-empty h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 6px;
+}
+
+.table-empty p {
+  font-size: 14px;
+}
+
+/* Loading state */
+.table-loading {
+  text-align: center;
+  padding: 64px 20px;
+  color: var(--color-ink-soft);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error state */
+.table-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-error);
+  font-size: 14px;
+}
+
+/* Summary bar */
+.predictions-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.summary-count strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}

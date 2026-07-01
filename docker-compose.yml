@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: fertipredict_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: fertipredict
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fertipredict"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ml_api:
+    build:
+      context: ./Ensemble_Learning_FertiPredict
+    container_name: fertipredict_ml
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: "./Backend FertiPredict/app"
+    container_name: fertipredict_backend
+    environment:
+      - DB_URL=jdbc:postgresql://postgres_db:5432/fertipredict
+      - ML_API_URL=http://ml_api:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      ml_api:
+        condition: service_started
+
+  frontend:
+    build:
+      context: "./Frontend FertiPredict/fertipredict-app"
+      args:
+        # Pasa la variable al entorno de compilación de Vite
+        - VITE_API_BASE_URL=http://localhost:8080
+    container_name: fertipredict_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

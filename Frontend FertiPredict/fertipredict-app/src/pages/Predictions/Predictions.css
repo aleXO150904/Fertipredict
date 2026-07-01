@@ -1,0 +1,335 @@
+/* ── Action Buttons ──────────────────────────────────────── */
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.action-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.action-btn--view {
+  background-color: #E0F5F5;
+  color: #17A3A3;
+}
+
+.action-btn--view:hover {
+  background-color: #17C3C3;
+  color: #ffffff;
+}
+
+.action-btn--edit {
+  background-color: #FDF8E4;
+  color: #9C7E00;
+}
+
+.action-btn--edit:hover {
+  background-color: #D4A017;
+  color: #ffffff;
+}
+
+.action-btn--delete {
+  background-color: #FBEAE4;
+  color: #B3432B;
+}
+
+.action-btn--delete:hover {
+  background-color: #B3432B;
+  color: #ffffff;
+}
+
+/* ── Modal base ──────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modal-in 0.18s ease;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── View Modal ──────────────────────────────────────────── */
+.modal-box--view {
+  width: 100%;
+  max-width: 680px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid #e9edf2;
+  flex-shrink: 0;
+}
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.modal-close-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px 0;
+  color: #64748b;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.modal-prob {
+  padding: 12px 24px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.modal-prob .prob-value {
+  font-size: 13px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.modal-body {
+  overflow-y: auto;
+  padding: 4px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-patient-section {
+  border: 1px solid #e9edf2;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.modal-patient-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.modal-patient-title--male {
+  color: #2563eb;
+}
+
+.modal-patient-title--female {
+  color: #db2777;
+}
+
+.modal-patient-title--male::before,
+.modal-patient-title--female::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.modal-patient-title--male::before  { background: #2563eb; }
+.modal-patient-title--female::before { background: #db2777; }
+
+.modal-factors-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 14px 0 10px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.modal-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 14px;
+}
+
+.modal-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-detail-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.modal-detail-value {
+  font-size: 13px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* ── Delete Modal ────────────────────────────────────────── */
+.modal-box--delete {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  text-align: center;
+}
+
+.modal-delete-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fef2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  color: #dc2626;
+}
+
+.modal-delete-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.modal-delete-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 10px;
+}
+
+.modal-delete-message {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+
+.modal-delete-error {
+  font-size: 13px;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 0 0 16px;
+}
+
+.modal-delete-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.modal-btn-cancel {
+  padding: 9px 22px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.modal-btn-cancel:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.modal-btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-btn-confirm {
+  padding: 9px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.modal-btn-confirm:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.modal-btn-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

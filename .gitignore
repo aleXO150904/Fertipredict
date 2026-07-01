@@ -1,0 +1,29 @@
+# Backend (Java / Maven)
+Backend FertiPredict/app/target/
+*.jar
+*.war
+*.ear
+
+# Frontend (React / Vite)
+Frontend FertiPredict/fertipredict-app/node_modules/
+Frontend FertiPredict/fertipredict-app/dist/
+Frontend FertiPredict/fertipredict-app/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ML Model (Python)
+Ensemble_Learning_FertiPredict/__pycache__/
+Ensemble_Learning_FertiPredict/venv/
+Ensemble_Learning_FertiPredict/.venv/
+Ensemble_Learning_FertiPredict/*.pyc
+
+# IDEs y SO
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

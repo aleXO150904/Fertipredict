@@ -1,0 +1,71 @@
+:root {
+  /* Paleta — clínica, serena, profesional */
+  --color-bg: #F7F6F3;
+  --color-surface: #FFFFFF;
+  --color-ink: #1B2B33;
+  --color-ink-soft: #5A6B73;
+  --color-primary: #2b697a;
+  --color-primary-light: #26525c;
+  --color-accent: #D97757;
+  --color-accent-soft: #F4E4DD;
+  --color-border: #E2E0DA;
+  --color-error: #B3432B;
+  --color-success: #3E7359;
+
+  /* Tipografía */
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --shadow-card: 0 1px 2px rgba(27, 43, 51, 0.06), 0 4px 16px rgba(27, 43, 51, 0.04);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background-color: var(--color-accent-soft);
+  color: var(--color-primary);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

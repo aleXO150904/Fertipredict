@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Alex\\\\Desktop\\\\Proyecto FertiPredict\\\\Frontend FertiPredict\\\\fertipredict-app\" -Depth 0 | Where-Object { $_.Name -match '\\\\.\\(json|js|ts\\)$' } | Select-Object Name)"
+    ]
+  }
+}

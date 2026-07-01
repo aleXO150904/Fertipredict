@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FertiPredict — Evaluación de Riesgo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #1a5f6e; --teal-light: #e8f4f6; --coral: #d96b54;
+      --ink: #1c2530; --muted: #6b7a8d; --border: #d4dce6;
+      --surface: #f7f9fb; --white: #ffffff;
+      --low: #2e7d55; --low-bg: #eaf6ef;
+      --mod: #b45309; --mod-bg: #fef3e2;
+      --high: #c0392b; --high-bg: #fdecea;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; }
+    header { background: var(--teal); padding: 20px 40px; display: flex; align-items: center; gap: 14px; }
+    header .logo-mark { width: 38px; height: 38px; background: var(--coral); border-radius: 10px; display: grid; place-items: center; font-family: 'Source Serif 4', serif; font-size: 20px; font-weight: 600; color: var(--white); }
+    header h1 { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 600; color: var(--white); }
+    header p { font-size: 13px; color: rgba(255,255,255,0.65); margin-left: auto; }
+    main { max-width: 980px; margin: 36px auto; padding: 0 24px 60px; }
+    .intro { margin-bottom: 32px; }
+    .intro h2 { font-family: 'Source Serif 4', serif; font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+    .intro p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .section-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+    .section-header { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .section-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-male { background: #3b82f6; } .dot-female { background: var(--coral); } .dot-couple { background: var(--teal); }
+    .section-header h3 { font-size: 13px; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.6px; }
+    .section-header span { font-size: 12px; color: var(--muted); margin-left: auto; }
+    .fields-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px 20px; padding: 20px 24px; }
+    .field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .field input, .field select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--ink); background: var(--white); transition: border-color 0.15s, box-shadow 0.15s; appearance: none; }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,95,110,0.12); }
+    .field .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .action-row { display: flex; justify-content: flex-end; margin-top: 28px; }
+    #predictBtn { background: var(--coral); color: var(--white); border: none; border-radius: 9px; padding: 14px 36px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; gap: 8px; }
+    #predictBtn:hover { background: #c45a43; } #predictBtn:active { transform: scale(0.98); } #predictBtn:disabled { background: #b0b8c4; cursor: not-allowed; }
+    #result { margin-top: 28px; border-radius: 12px; padding: 24px 28px; display: none; border: 1.5px solid; }
+    #result.low { background: var(--low-bg); border-color: var(--low); }
+    #result.mod { background: var(--mod-bg); border-color: var(--mod); }
+    #result.high { background: var(--high-bg); border-color: var(--high); }
+    .result-top { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .result-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .low .result-badge { background: var(--low); color: var(--white); }
+    .mod .result-badge { background: var(--mod); color: var(--white); }
+    .high .result-badge { background: var(--high); color: var(--white); }
+    .result-label { font-family: 'Source Serif 4', serif; font-size: 20px; font-weight: 600; }
+    .low .result-label { color: var(--low); } .mod .result-label { color: var(--mod); } .high .result-label { color: var(--high); }
+    .result-prob { font-size: 13px; color: var(--muted); }
+    .result-prob strong { color: var(--ink); font-weight: 600; }
+    #error { display: none; margin-top: 20px; padding: 14px 18px; background: #fdecea; border: 1px solid #f5c6c2; border-radius: 8px; font-size: 13px; color: var(--high); }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Interpretación ── */
+    .result-interpretation {
+      font-size: 14px; line-height: 1.65;
+      color: var(--ink);
+      margin: 10px 0 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.55);
+    }
+
+    /* ── SHAP Top 5 ── */
+    .shap-section { margin-top: 20px; }
+    .shap-title {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .shap-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .shap-label {
+      width: 210px; flex-shrink: 0;
+      font-size: 13px; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .shap-bar-wrap {
+      flex: 1; height: 10px;
+      background: rgba(0,0,0,0.07);
+      border-radius: 6px; overflow: hidden;
+    }
+    .shap-bar {
+      height: 100%; border-radius: 6px;
+      transition: width 0.4s ease;
+    }
+    .shap-bar.positive { background: var(--high); }
+    .shap-bar.negative { background: var(--low); }
+    .shap-value {
+      width: 58px; flex-shrink: 0;
+      font-size: 12px; font-weight: 600; text-align: right;
+    }
+    .shap-value.positive { color: var(--high); }
+    .shap-value.negative { color: var(--low); }
+    .shap-dir {
+      width: 80px; flex-shrink: 0;
+      font-size: 11px; font-weight: 500;
+    }
+    .shap-dir.positive { color: var(--high); }
+    .shap-dir.negative { color: var(--low); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">F</div>
+  <h1>FertiPredict</h1>
+  <p>Evaluación de riesgo de infertilidad de pareja</p>
+</header>
+
+<main>
+  <div class="intro">
+    <h2>Perfil clínico de la pareja</h2>
+    <p>Complete los datos clínicos del varón y de la mujer para generar la predicción del modelo de ensamble.</p>
+  </div>
+
+  <!-- ══ MASCULINO ══ -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-dot dot-male"></div>
+      <h3>Factores masculinos</h3>
+      <span>12 campos</span>
+    </div>
+    <div class="fields-grid">
+
+      <div class="field">
+        <label>Edad (años)</label>
+        <input type="number" id="Edad_Masculino" min="18" max="80" placeholder="ej. 34" />
+      </div>
+
+      <div class="field">
+        <label>IMC (kg/m²)</label>
+        <input type="number" id="IMC_Masculino" min="10" max="60" step="0.1" placeholder="ej. 24.5" />
+      </div>
+
+      <div class="field">
+        <label>Concentración espermática (M/ml)</label>
+        <input type="number" id="Concentracion_Esperma" min="0" step="0.1" placeholder="ej. 15.0" />
+      </div>
+
+      <div class="field">
+        <label>Motilidad espermática (%)</label>
+        <input type="number" id="Motilidad_Espermatica" min="0" max="100" step="0.1" placeholder="ej. 40.0" />
+      </div>
+
+      <div class="field">
+        <label>Morfología espermática (%)</label>
+        <input type="number" id="Morfologia_Espermatica" min="0" max="100" step="0.1" placeholder="ej. 4.0" />
+      </div>
+
+      <div class="field">
+        <label>Varicocele</label>
+        <select id="Varicocele">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Exposición tóxicos / calor</label>
+        <select id="Exposicion_Toxicos_Calor_Masculino">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fumador</label>
+        <select id="Fumador_Masculino">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Consumo de alcohol (0–3)</label>
+        <select id="Consumo_Alcohol_Masculino">
+          <option value="">Seleccionar…</option>
+          <option value="0">0 — Ninguno</option>
+          <option value="1">1 — Ocasional</option>
+          <option value="2">2 — Moderado</option>
+          <option value="3">3 — Frecuente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Nivel de ejercicio (0–3)</label>
+        <select id="Nivel_Ejercicio_Masculino">
+          <option value="">Seleccionar…</option>
+          <option value="0">0 — Sedentario</option>
+          <option value="1">1 — Leve</option>
+          <option value="2">2 — Moderado</option>
+          <option value="3">3 — Intenso</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo de alimentación (0–3)</label>
+        <select id="Tipo_Alimentacion_Masculino">
+          <option value="">Seleccionar…</option>
+          <option value="0">0 — Pobre</option>
+          <option value="1">1 — Regular</option>
+          <option value="2">2 — Buena</option>
+          <option value="3">3 — Excelente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Historial familiar infertilidad</label>
+        <select id="Historial_Familiar_Infertilidad_Masculino">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ FEMENINO ══ -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-dot dot-female"></div>
+      <h3>Factores femeninos</h3>
+      <span>14 campos</span>
+    </div>
+    <div class="fields-grid">
+
+      <div class="field">
+        <label>Edad (años)</label>
+        <input type="number" id="Edad_Femenino" min="18" max="60" placeholder="ej. 31" />
+      </div>
+
+      <div class="field">
+        <label>IMC (kg/m²)</label>
+        <input type="number" id="IMC_Femenino" min="10" max="60" step="0.1" placeholder="ej. 22.8" />
+      </div>
+
+      <div class="field">
+        <label>Ciclo menstrual regular</label>
+        <select id="Ciclo_Menstrual">
+          <option value="">Seleccionar…</option>
+          <option value="1">Regular</option>
+          <option value="0">Irregular</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>PCOS (SOP)</label>
+        <select id="PCOS">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Endometriosis</label>
+        <select id="Endometriosis">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Hormona AMH (ng/ml)</label>
+        <input type="number" id="Hormona_AMH" min="0" step="0.01" placeholder="ej. 2.5" />
+      </div>
+
+      <div class="field">
+        <label>Hormona FSH (mIU/ml)</label>
+        <input type="number" id="Hormona_FSH" min="0" step="0.1" placeholder="ej. 7.2" />
+      </div>
+
+      <div class="field">
+        <label>Obstrucción tubárica</label>
+        <select id="Obstruccion_Tubaria">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Abortos previos</label>
+        <input type="number" id="Abortos_Previos" min="0" max="20" placeholder="ej. 0" />
+      </div>
+
+      <div class="field">
+        <label>Fumadora</label>
+        <select id="Fumador_Femenino">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Consumo de alcohol (0–3)</label>
+        <select id="Consumo_Alcohol_Femenino">
+          <option value="">Seleccionar…</option>
+          <option value="0">0 — Ninguno</option>
+          <option value="1">1 — Ocasional</option>
+          <option value="2">2 — Moderado</option>
+          <option value="3">3 — Frecuente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Nivel de ejercicio (0–3)</label>
+        <select id="Nivel_Ejercicio_Femenino">
+          <option value="">Seleccionar…</option>
+          <option value="0">0 — Sedentario</option>
+          <option value="1">1 — Leve</option>
+          <option value="2">2 — Moderado</option>
+          <option value="3">3 — Intenso</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo de alimentación (0–3)</label>
+        <select id="Tipo_Alimentacion_Femenino">
+          <option value="">Seleccionar…</option>
+          <option value="0">0 — Pobre</option>
+          <option value="1">1 — Regular</option>
+          <option value="2">2 — Buena</option>
+          <option value="3">3 — Excelente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Historial familiar infertilidad</label>
+        <select id="Historial_Familiar_Infertilidad_Femenino">
+          <option value="">Seleccionar…</option>
+          <option value="1">Sí</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ ACCIÓN ══ -->
+  <div class="action-row">
+    <button id="predictBtn" onclick="predict()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Generar predicción
+    </button>
+  </div>
+
+  <div id="error"></div>
+
+  <div id="result">
+    <div class="result-top">
+      <span class="result-badge" id="resultBadge"></span>
+      <span class="result-label" id="resultLabel"></span>
+    </div>
+    <div class="result-prob">
+      Probabilidad de riesgo alto: <strong id="resultProb"></strong>
+    </div>
+    <div class="result-interpretation" id="resultInterpretation"></div>
+    <div class="shap-section" id="shapSection" style="display:none">
+      <div class="shap-title">Top 5 factores más influyentes en esta predicción</div>
+      <div id="shapBars"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_URL = "http://localhost:8000/predict";
+
+  // IDs del HTML → nombres exactos del PredictionInput de FastAPI
+  const FIELD_MAP = {
+    Edad_Masculino:                          { key: "Edad_Masculino",                          type: "int" },
+    IMC_Masculino:                           { key: "IMC_Masculino",                           type: "float" },
+    Concentracion_Esperma:                   { key: "Concentracion_Esperma",                   type: "float" },
+    Motilidad_Espermatica:                   { key: "Motilidad_Espermatica",                   type: "float" },
+    Morfologia_Espermatica:                  { key: "Morfologia_Espermatica",                  type: "float" },
+    Varicocele:                              { key: "Varicocele",                              type: "int" },
+    Exposicion_Toxicos_Calor_Masculino:      { key: "Exposicion_Toxicos_Calor_Masculino",      type: "int" },
+    Fumador_Masculino:                       { key: "Fumador_Masculino",                       type: "int" },
+    Consumo_Alcohol_Masculino:               { key: "Consumo_Alcohol_Masculino",               type: "int" },
+    Nivel_Ejercicio_Masculino:               { key: "Nivel_Ejercicio_Masculino",               type: "int" },
+    Tipo_Alimentacion_Masculino:             { key: "Tipo_Alimentacion_Masculino",             type: "int" },
+    Historial_Familiar_Infertilidad_Masculino: { key: "Historial_Familiar_Infertilidad_Masculino", type: "int" },
+    Edad_Femenino:                           { key: "Edad_Femenino",                           type: "int" },
+    IMC_Femenino:                            { key: "IMC_Femenino",                            type: "float" },
+    Ciclo_Menstrual:                         { key: "Ciclo_Menstrual",                         type: "int" },
+    PCOS:                                    { key: "PCOS",                                    type: "int" },
+    Endometriosis:                           { key: "Endometriosis",                           type: "int" },
+    Hormona_AMH:                             { key: "Hormona_AMH",                             type: "float" },
+    Hormona_FSH:                             { key: "Hormona_FSH",                             type: "float" },
+    Obstruccion_Tubaria:                     { key: "Obstruccion_Tubaria",                     type: "int" },
+    Abortos_Previos:                         { key: "Abortos_Previos",                         type: "int" },
+    Fumador_Femenino:                        { key: "Fumador_Femenino",                        type: "int" },
+    Consumo_Alcohol_Femenino:                { key: "Consumo_Alcohol_Femenino",                type: "int" },
+    Nivel_Ejercicio_Femenino:                { key: "Nivel_Ejercicio_Femenino",                type: "int" },
+    Tipo_Alimentacion_Femenino:              { key: "Tipo_Alimentacion_Femenino",              type: "int" },
+    Historial_Familiar_Infertilidad_Femenino:{ key: "Historial_Familiar_Infertilidad_Femenino", type: "int" },
+  };
+
+  async function predict() {
+    const btn = document.getElementById("predictBtn");
+    const errorEl = document.getElementById("error");
+    const resultEl = document.getElementById("result");
+    errorEl.style.display = "none";
+    resultEl.style.display = "none";
+
+    const payload = {};
+    const missing = [];
+
+    for (const [htmlId, meta] of Object.entries(FIELD_MAP)) {
+      const el = document.getElementById(htmlId);
+      if (!el) { console.error("Campo no encontrado en el DOM:", htmlId); continue; }
+      const raw = el.value.trim();
+      if (raw === "") {
+        missing.push(el.closest(".field").querySelector("label").textContent.trim());
+      } else {
+        payload[meta.key] = meta.type === "int" ? parseInt(raw, 10) : parseFloat(raw);
+      }
+    }
+
+    if (missing.length > 0) {
+      errorEl.textContent = `Completa estos campos antes de predecir: ${missing.slice(0, 4).join(", ")}${missing.length > 4 ? ` y ${missing.length - 4} más.` : "."}`;
+      errorEl.style.display = "block";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner"></div> Analizando…`;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Error ${response.status}: ${err}`);
+      }
+
+      const data = await response.json();
+      showResult(data.riskLevel, data.probability, data.explanation);
+
+    } catch (err) {
+      errorEl.textContent = `No se pudo conectar con el modelo: ${err.message}`;
+      errorEl.style.display = "block";
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Generar predicción`;
+    }
+  }
+
+  function showResult(riskLevel, probability, explanation) {
+    const resultEl  = document.getElementById("result");
+    const badge     = document.getElementById("resultBadge");
+    const label     = document.getElementById("resultLabel");
+    const prob      = document.getElementById("resultProb");
+    const interp    = document.getElementById("resultInterpretation");
+    const shapSec   = document.getElementById("shapSection");
+    const shapBars  = document.getElementById("shapBars");
+
+    const map = {
+      LOW:      { cls: "low", text: "Riesgo bajo" },
+      MODERATE: { cls: "mod", text: "Riesgo moderado" },
+      HIGH:     { cls: "high", text: "Riesgo alto" },
+    };
+    const info = map[riskLevel] ?? { cls: "mod", text: riskLevel };
+
+    resultEl.className = info.cls;
+    badge.textContent  = riskLevel;
+    label.textContent  = info.text;
+    prob.textContent   = `${probability}%`;
+
+    // ── Interpretación textual ──
+    const interpMap = {
+      LOW: {
+        ranges: [
+          { max: 20,  text: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, la pareja presenta indicadores clínicos favorables. La posibilidad de infertilidad es muy baja y no se requieren intervenciones inmediatas.` },
+          { max: 35,  text: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, la pareja muestra un perfil de bajo riesgo. Se recomienda seguimiento rutinario sin intervención clínica urgente.` },
+        ],
+        default: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, la pareja se clasifica en riesgo bajo. Se sugiere monitoreo preventivo.`
+      },
+      MODERATE: {
+        ranges: [
+          { max: 50,  text: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, la pareja presenta factores de riesgo moderados. Se recomienda evaluación más detallada y posible intervención clínica.` },
+          { max: 65,  text: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, existe una probabilidad considerable de dificultades para concebir. Se aconseja iniciar un plan de seguimiento clínico activo.` },
+        ],
+        default: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, la pareja se encuentra en zona de riesgo moderado. Consulta especializada recomendada.`
+      },
+      HIGH: {
+        ranges: [
+          { max: 80,  text: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, la pareja presenta múltiples factores de riesgo significativos. Se recomienda evaluación especializada inmediata.` },
+          { max: 100, text: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, el modelo identifica un perfil de alto riesgo de infertilidad. Intervención clínica prioritaria recomendada.` },
+        ],
+        default: `Con un <strong>${probability}%</strong> de probabilidad de riesgo alto, se detecta un perfil de alto riesgo. Se requiere atención especializada urgente.`
+      }
+    };
+
+    const levelInterp = interpMap[riskLevel];
+    let interpText = levelInterp.default;
+    if (levelInterp.ranges) {
+      for (const r of levelInterp.ranges) {
+        if (probability <= r.max) { interpText = r.text; break; }
+      }
+    }
+    interp.innerHTML = interpText;
+
+    // ── Top 5 SHAP ──
+    if (explanation) {
+      // Ordenar por valor absoluto descendente y tomar top 5
+      const sorted = Object.entries(explanation)
+        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+        .slice(0, 5);
+
+      const maxAbs = Math.abs(sorted[0][1]);
+
+      // Nombres legibles
+      const labelMap = {
+        "Edad_Masculino": "Edad masculina",
+        "IMC_Masculino": "IMC masculino",
+        "Concentracion_Esperma": "Concentración espermática",
+        "Motilidad_Espermatica": "Motilidad espermática",
+        "Morfologia_Espermatica": "Morfología espermática",
+        "Varicocele": "Varicocele",
+        "Exposicion_Toxicos_Calor_Masculino": "Exposición tóxicos (M)",
+        "Fumador_Masculino": "Tabaquismo masculino",
+        "Consumo_Alcohol_Masculino": "Alcohol masculino",
+        "Nivel_Ejercicio_Masculino": "Ejercicio masculino",
+        "Tipo_Alimentacion_Masculino": "Alimentación masculina",
+        "Historial_Familiar_Infertilidad_Masculino": "Historial familiar (M)",
+        "Edad_Femenino": "Edad femenina",
+        "IMC_Femenino": "IMC femenino",
+        "Ciclo_Menstrual": "Ciclo menstrual",
+        "PCOS": "PCOS (SOP)",
+        "Endometriosis": "Endometriosis",
+        "Hormona Antimulleriana (amh)": "Hormona AMH",
+        "hormona foliculoestimulante (fsh)": "Hormona FSH",
+        "Obstruccion_Tubaria": "Obstrucción tubárica",
+        "Abortos_Previos": "Abortos previos",
+        "Fumador_Femenino": "Tabaquismo femenino",
+        "Consumo_Alcohol_Femenino": "Alcohol femenino",
+        "Nivel_Ejercicio_Femenino": "Ejercicio femenino",
+        "Tipo_Alimentacion_Femenino": "Alimentación femenina",
+        "Historial_Familiar_Infertilidad_Femenino": "Historial familiar (F)",
+      };
+
+      shapBars.innerHTML = sorted.map(([feature, value]) => {
+        const pct = (Math.abs(value) / maxAbs * 100).toFixed(1);
+        const isPos = value >= 0;
+        const readable = labelMap[feature] || feature;
+        const dir = isPos ? "↑ aumenta riesgo" : "↓ reduce riesgo";
+        const sign = isPos ? `+${value.toFixed(4)}` : value.toFixed(4);
+        return `
+          <div class="shap-row">
+            <div class="shap-label" title="${readable}">${readable}</div>
+            <div class="shap-bar-wrap">
+              <div class="shap-bar ${isPos ? 'positive' : 'negative'}" style="width:${pct}%"></div>
+            </div>
+            <div class="shap-value ${isPos ? 'positive' : 'negative'}">${sign}</div>
+            <div class="shap-dir ${isPos ? 'positive' : 'negative'}">${dir}</div>
+          </div>`;
+      }).join("");
+
+      shapSec.style.display = "block";
+    }
+
+    resultEl.style.display = "block";
+    resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+</script>
+
+</body>
+</html>
