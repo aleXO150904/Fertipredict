@@ -33,15 +33,11 @@ interface RiskDistribution {
 }
 
 // ─── API ─────────────────────────────────────────────────────────────────────
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+import { api } from "../../services/api";
 
 async function fetchJSON<T>(path: string): Promise<T> {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${API}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error(`Error ${res.status}`);
-  return res.json();
+  const res = await api.get<T>(path);
+  return res.data;
 }
 
 // ─── Chart constants ─────────────────────────────────────────────────────────
