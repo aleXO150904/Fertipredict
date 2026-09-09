@@ -1,5 +1,5 @@
 :root {
-  /* Paleta Vibrante y Moderna */
+  /* Paleta Vibrante y Moderna — Modo Oscuro (por defecto) */
   --color-bg: #0F172A; /* Slate 900 */
   --color-surface: rgba(30, 41, 59, 0.6); /* Translucent */
   --color-ink: #F8FAFC;
@@ -28,6 +28,26 @@
   --shadow-card: var(--glass-shadow);
 }
 
+/* ── Tema Claro ─────────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-bg: #F0F4FF;
+  --color-surface: rgba(255, 255, 255, 0.85);
+  --color-ink: #1E1B4B;
+  --color-ink-soft: #64748B;
+  --color-primary: #4F46E5;
+  --color-primary-light: #6366F1;
+  --color-accent: #E11D48;
+  --color-accent-soft: rgba(225, 29, 72, 0.1);
+  --color-border: rgba(99, 102, 241, 0.15);
+  --color-error: #DC2626;
+  --color-success: #059669;
+
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: 1px solid rgba(99, 102, 241, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+  --glass-blur: blur(12px);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -43,6 +63,7 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 button {

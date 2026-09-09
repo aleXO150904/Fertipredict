@@ -115,6 +115,43 @@
 .sidebar-footer {
   padding: 16px 12px;
   border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Theme Toggle Button ── */
+.sidebar-theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.sidebar-theme-toggle:hover {
+  background-color: var(--color-accent-soft);
+  color: var(--color-primary-light);
+}
+
+.sidebar-theme-toggle svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  transition: transform 0.4s ease;
+}
+
+.sidebar-theme-toggle:hover svg {
+  transform: rotate(20deg);
 }
 
 .sidebar-logout-btn {
@@ -295,7 +332,7 @@
 }
 
 .predictions-table tbody tr:hover {
-  background-color: #f9f8f5;
+  background-color: var(--color-accent-soft);
 }
 
 .predictions-table td {
