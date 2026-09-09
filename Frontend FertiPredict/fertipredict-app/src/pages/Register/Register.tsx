@@ -44,7 +44,7 @@ export default function Register({onLogin}: RegisterProps) {
             setShowSuccess(true);
             setTimeout(() => {
                 onLogin();
-            }, 1800);
+            }, 300);
         }catch{
 
             setError("No fue posible crear la cuenta.");

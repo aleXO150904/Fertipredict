@@ -24,6 +24,10 @@ def serve_frontend():
 # Cargar el modelo entrenado al iniciar la API
 model = joblib.load("model_ensemble.pkl")
 
+# Pre-inicializar explainer de SHAP
+base_models = model.estimators_
+shap_explainer = shap.TreeExplainer(base_models[0])
+
 # Cargar el modelo de XAI
 background = joblib.load("background_data.pkl")
 if hasattr(background, 'iloc'):
@@ -107,9 +111,6 @@ def predict(data: PredictionInput):
     probability = round(float(probabilities[2]) * 100, 2)
 
     #SHAP Local
-    base_models = model.estimators_
-    shap_explainer = shap.TreeExplainer(base_models[0])
-    
     sv = shap_explainer.shap_values(input_data.values)
 
     if isinstance(sv, list):

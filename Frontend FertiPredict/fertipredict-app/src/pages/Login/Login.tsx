@@ -25,7 +25,7 @@ export default function Login({onRegister} : LoginProps) {
       setShowSuccess(true);
       setTimeout(() => {
         login(response.token);
-      }, 1800);
+      }, 300);
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Verifica tus datos e intenta de nuevo.");
     } finally {
