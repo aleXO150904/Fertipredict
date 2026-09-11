@@ -43,9 +43,9 @@ async function fetchJSON<T>(path: string): Promise<T> {
 // ─── Chart constants ─────────────────────────────────────────────────────────
 const C_TEAL  = "#17C3C3";
 const C_GREEN = "#4CAF8E";
-const C_AXIS  = "#E2E0DA";
-const C_LABEL = "#5A6B73";
-const C_INK   = "#1B2B33";
+const C_AXIS  = "var(--color-border)";
+const C_LABEL = "var(--color-ink-soft)";
+const C_INK   = "var(--color-ink)";
 const LC_X1 = 50, LC_X2 = 500, LC_Y2 = 205;
 
 const PIE_COLORS = ["#1A6B7A", "#5DD5D0", "#A8E8E3", "#2DB5C0", "#3ED4A0"];

@@ -283,7 +283,7 @@
 }
 
 .search-input::placeholder {
-  color: #A8AAA6;
+  color: var(--color-ink-soft);
 }
 
 .search-input:focus {
@@ -406,7 +406,7 @@
 }
 
 .risk-badge.pending {
-  background-color: #EEF2F7;
+  background-color: var(--color-bg);
   color: var(--color-ink-soft);
 }
 

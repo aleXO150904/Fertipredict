@@ -199,17 +199,17 @@ function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void
                 const label = FEATURE_LABELS[feature] || feature;
                 return (
                   <div className="shap-row" key={feature} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', fontSize: '13px' }}>
-                    <div className="shap-label" title={label} style={{ flex: '0 0 160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text)' }}>{label}</div>
+                    <div className="shap-label" title={label} style={{ flex: '0 0 160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-ink)' }}>{label}</div>
                     <div className="shap-bar-wrap" style={{ flex: 1, height: '6px', backgroundColor: 'var(--color-border)', borderRadius: '3px', position: 'relative' }}>
                       <div
                         className={`shap-bar ${isPositive ? "positive" : "negative"}`}
                         style={{ position: 'absolute', top: 0, bottom: 0, borderRadius: '3px', width: `${pct}%`, [isPositive ? 'left' : 'right']: '50%', backgroundColor: isPositive ? '#c0392b' : '#27ae60', transform: isPositive ? 'none' : 'translateX(100%)' }}
                       />
                     </div>
-                    <div className={`shap-value ${isPositive ? "positive" : "negative"}`} style={{ flex: '0 0 60px', textAlign: 'right', fontWeight: 600, color: isPositive ? '#c0392b' : '#27ae60' }}>
+                    <div className={`shap-value ${isPositive ? "positive" : "negative"}`} style={{ flex: '0 0 60px', textAlign: 'right', fontWeight: 600, color: isPositive ? 'var(--color-error)' : 'var(--color-success)' }}>
                       {isPositive ? "+" : ""}{value.toFixed(4)}
                     </div>
-                    <div className={`shap-dir ${isPositive ? "positive" : "negative"}`} style={{ flex: '0 0 110px', color: isPositive ? '#c0392b' : '#27ae60', fontSize: '12px' }}>
+                    <div className={`shap-dir ${isPositive ? "positive" : "negative"}`} style={{ flex: '0 0 110px', color: isPositive ? 'var(--color-error)' : 'var(--color-success)', fontSize: '12px' }}>
                       {isPositive ? "↑ aumenta riesgo" : "↓ reduce riesgo"}
                     </div>
                   </div>

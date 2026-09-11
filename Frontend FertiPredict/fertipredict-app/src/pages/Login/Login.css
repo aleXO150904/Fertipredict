@@ -96,7 +96,7 @@
   padding: 11px 13px;
   font-size: 14.5px;
   color: var(--color-ink);
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--color-bg);
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -106,7 +106,7 @@
 
 .field input:focus {
   border-color: var(--color-primary-light);
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: var(--color-surface-solid);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
   outline: none;
 }
@@ -175,7 +175,7 @@
   font-size: 28px;
   font-weight: 500;
   line-height: 1.3;
-  color: white;
+  color: var(--color-ink);
   letter-spacing: -0.01em;
   margin-bottom: 16px;
 }
@@ -183,7 +183,7 @@
 .login-side-content p {
   font-size: 14.5px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-ink-soft);
 }
 
 /* ---------- Success Modal Styles ---------- */

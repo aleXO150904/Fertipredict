@@ -1,0 +1,54 @@
+name: Keep FertiPredict backends awake
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '3,13,23,33,43,53 * * * *'
+
+permissions: {}
+
+concurrency:
+  group: fertipredict-keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [web, ml]
+    steps:
+      - name: Check service health
+        env:
+          SERVICE: ${{ matrix.service }}
+          WEB_URL: ${{ vars.BACKEND_HEALTH_URL }}
+          ML_URL: ${{ vars.ML_HEALTH_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$SERVICE" == "web" ]]; then
+            url="$WEB_URL"
+            expected="success"
+          else
+            url="$ML_URL"
+            expected="ok"
+          fi
+          if [[ "$url" != https://* ]]; then
+            echo "::error::Configure the HTTPS health URL for $SERVICE in repository variables."
+            exit 1
+          fi
+          # Only health checks: no patient records or prediction requests.
+          curl --silent --show-error --fail --proto '=https' \
+            --connect-timeout 15 --max-time 480 \
+            --output health.json "$url"
+          python3 - "$expected" <<'PY'
+          import json
+          import sys
+          with open('health.json') as response:
+              payload = json.load(response)
+          if payload.get('status') != sys.argv[1]:
+              raise SystemExit('Unexpected health status')
+          print('Health check passed')
+          PY
