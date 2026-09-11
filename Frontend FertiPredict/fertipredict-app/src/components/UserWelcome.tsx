@@ -21,16 +21,17 @@ export default function UserWelcome() {
     window.addEventListener("fertipredict:profile-updated", load);
     return () => { active = false; window.removeEventListener("fertipredict:profile-updated", load); };
   }, []);
-  const name = user?.names?.trim() || user?.username || "";
+  const name = [user?.names?.trim(), user?.lastnames?.trim()].filter(Boolean).join(" ") || user?.username || "";
   const initials = [user?.names, user?.lastnames].map(part => part?.trim().charAt(0) || "").join("").toLocaleUpperCase("es-PE") || "?";
   // USER is the existing clinical account type; this label does not grant permissions.
   const roles: Record<string, string> = { ADMIN: "Administrador", USER: "Médico", DOCTOR: "Médico", MEDICO: "Médico" };
-  return <section className="sidebar-welcome" aria-label="Usuario conectado">
+  const role = roles[user?.role?.trim().toUpperCase() || ""] || "Rol no disponible";
+  return <section className="sidebar-welcome" aria-label="Usuario conectado" aria-busy={loading}>
     <span className="sidebar-avatar" aria-hidden="true">{initials}</span>
     <div className="sidebar-welcome-text">
       <span className="sidebar-greeting">Bienvenido/a</span>
       <strong title={name}>{loading ? "Cargando perfil…" : failed ? "Perfil no disponible" : name || "Usuario"}</strong>
-      <span className="sidebar-role">{loading ? "" : roles[user?.role || ""] || "Rol no disponible"}</span>
+      {!loading && !failed && <span className="sidebar-role">{role}</span>}
     </div>
   </section>;
 }

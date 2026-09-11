@@ -418,7 +418,6 @@ export default function PredictionsPage({
           </svg>
           Nueva Predicción
         </button>
-        <button className="btn-outline export-button" type="button" onClick={() => exportPredictionsToExcel(filtered)} disabled={loading || filtered.length === 0} title="Exportar las predicciones visibles a Excel">Exportar a Excel</button>
       </div>
 
       {/* Toolbar */}
@@ -440,13 +439,17 @@ export default function PredictionsPage({
       </div>
 
       {/* Summary */}
-      {!loading && !error && (
-        <div className="predictions-summary">
+      <div className="predictions-table-heading">
+        {!loading && !error && <div className="predictions-summary">
           <span className="summary-count">
             <strong>{filtered.length}</strong> de {predictions.length} predicción{predictions.length !== 1 ? "es" : ""}
           </span>
-        </div>
-      )}
+        </div>}
+        <button className="btn-outline export-button" type="button" onClick={() => exportPredictionsToExcel(filtered)} disabled={loading || !!error || filtered.length === 0} title="Exportar las predicciones visibles a Excel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4" /></svg>
+          Exportar a Excel
+        </button>
+      </div>
 
       {/* Table Card */}
       <div className="predictions-table-card">

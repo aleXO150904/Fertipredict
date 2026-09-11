@@ -4,7 +4,16 @@
   align-items: center;
   gap: 6px;
 }
-.export-button { margin-left: 8px; white-space: nowrap; }
+.predictions-page > .page-header { gap: 20px; align-items: center; flex-wrap: wrap; }
+.predictions-page #btn-nueva-prediccion { margin-left: auto; flex-shrink: 0; }
+.predictions-table-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; }
+.predictions-table-heading .predictions-summary { margin-bottom: 0; }
+.predictions-table-heading .export-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-left: auto; white-space: nowrap; }
+.export-button svg { width: 18px; height: 18px; }
+.export-button:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 600px) {
+  .predictions-page #btn-nueva-prediccion { width: 100%; justify-content: center; }
+}
 
 .action-btn {
   width: 30px;
