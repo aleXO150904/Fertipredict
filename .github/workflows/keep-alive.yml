@@ -23,8 +23,8 @@ jobs:
       - name: Check service health
         env:
           SERVICE: ${{ matrix.service }}
-          WEB_URL: ${{ vars.BACKEND_HEALTH_URL }}
-          ML_URL: ${{ vars.ML_HEALTH_URL }}
+          WEB_URL: https://fertipredict.onrender.com/api/test
+          ML_URL: https://fertipredict-ml.onrender.com/health
         shell: bash
         run: |
           set -euo pipefail
