@@ -5,11 +5,13 @@ export default function UserWelcome() {
   const [user, setUser] = useState<UserDTO | null>(null);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
     let active = true;
     let requestId = 0;
     async function load() {
       const current = ++requestId;
+      setLoading(true);
       try {
         const profile = await userService.getMe();
         if (active && current === requestId) { setUser(profile); setFailed(false); }
@@ -20,7 +22,7 @@ export default function UserWelcome() {
     void load();
     window.addEventListener("fertipredict:profile-updated", load);
     return () => { active = false; window.removeEventListener("fertipredict:profile-updated", load); };
-  }, []);
+  }, [retry]);
   const name = [user?.names?.trim(), user?.lastnames?.trim()].filter(Boolean).join(" ") || user?.username || "";
   const initials = [user?.names, user?.lastnames].map(part => part?.trim().charAt(0) || "").join("").toLocaleUpperCase("es-PE") || "?";
   // USER is the existing clinical account type; this label does not grant permissions.
@@ -32,6 +34,7 @@ export default function UserWelcome() {
       <span className="sidebar-greeting">Bienvenido/a</span>
       <strong title={name}>{loading ? "Cargando perfil…" : failed ? "Perfil no disponible" : name || "Usuario"}</strong>
       {!loading && !failed && <span className="sidebar-role">{role}</span>}
+      {!loading && failed && <button className="link-button" type="button" onClick={() => setRetry(value => value + 1)}>Reintentar</button>}
     </div>
   </section>;
 }

@@ -11,6 +11,11 @@
 .predictions-table-heading .export-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-left: auto; white-space: nowrap; }
 .export-button svg { width: 18px; height: 18px; }
 .export-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.prediction-modal-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.prediction-pdf-button { white-space: nowrap; font-size: 12px; padding: 8px 12px; }
+.prediction-pdf-button:disabled { opacity: 0.6; cursor: wait; }
+.prediction-pdf-error { margin: 12px 24px; color: var(--color-error); font-size: 13px; }
+.modal-box--view .modal-header { flex-wrap: wrap; gap: 12px; }
 @media (max-width: 600px) {
   .predictions-page #btn-nueva-prediccion { width: 100%; justify-content: center; }
 }

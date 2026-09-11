@@ -52,13 +52,13 @@ function exportPredictionsToExcel(rows: PredictionDTO[]) {
 
 function formatProbability(prob: number): string {
   if (prob === undefined || prob === null) return "—";
-  const val = prob > 1 ? prob : prob * 100;
+  const val = prob;
   return `${val.toFixed(1)}%`;
 }
 
 function getProbabilityPercent(prob: number): number {
   if (prob === undefined || prob === null) return 0;
-  const val = prob > 1 ? prob : prob * 100;
+  const val = prob;
   return Math.min(100, Math.max(0, val));
 }
 
@@ -144,6 +144,18 @@ function getTop5(explanation?: Record<string, number>) {
 
 /* ── ViewModal ───────────────────────────────────────────── */
 function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void }) {
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState("");
+  async function exportPdf() {
+    setExportingPdf(true);
+    setPdfError("");
+    try {
+      const { createPredictionPdf } = await import("../../services/predictionPdf");
+      createPredictionPdf(pred, FEATURE_LABELS).save(`FertiPredict-${formatId(pred.id)}.pdf`);
+    } catch {
+      setPdfError("No se pudo generar el PDF. Inténtalo de nuevo.");
+    } finally { setExportingPdf(false); }
+  }
   useEffect(() => {
     document.body.style.overflow = "hidden";
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
@@ -178,12 +190,19 @@ function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void
             <span className="pred-id">{formatId(pred.id)}</span>
             <RiskBadge level={pred.riskLevel} />
           </div>
+          <div className="prediction-modal-actions">
+          <button className="btn-outline prediction-pdf-button" type="button" onClick={exportPdf} disabled={exportingPdf}>
+            {exportingPdf ? "Generando PDF…" : "Exportar PDF"}
+          </button>
           <button className="modal-close-btn" onClick={onClose} title="Cerrar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
+          </div>
         </div>
+
+        {pdfError && <p className="prediction-pdf-error" role="alert">{pdfError}</p>}
 
         <div className="modal-meta">
           <span>{getCoupleId(pred)}</span>
@@ -195,7 +214,7 @@ function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void
           <div className="prob-bar-track" style={{ flex: 1, height: 8 }}>
             <div className={`prob-bar-fill ${probCls}`} style={{ width: `${probPct}%` }} />
           </div>
-          <span className="prob-value">{formatProbability(pred.probability)} de probabilidad de infertilidad</span>
+          <span className="prob-value">{formatProbability(pred.probability)} de probabilidad de alto riesgo</span>
         </div>
 
         <div className="modal-body">

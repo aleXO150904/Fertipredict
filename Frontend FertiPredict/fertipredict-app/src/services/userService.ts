@@ -17,12 +17,12 @@ export interface UpdateUserRequest {
 
 export const userService = {
   async getMe(): Promise<UserDTO> {
-    const response = await api.get<UserDTO>("/user/me");
+    const response = await api.get<UserDTO>("/api/v1/user/me");
     return response.data;
   },
   
   async updateUser(data: UpdateUserRequest): Promise<{ message: string }> {
-    const response = await api.put("/user", data);
+    const response = await api.put("/api/v1/user", data);
     window.dispatchEvent(new Event("fertipredict:profile-updated"));
     return response.data;
   }
