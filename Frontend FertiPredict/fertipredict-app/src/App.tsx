@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import PasswordRecovery from "./pages/Login/PasswordRecovery";
+import UserWelcome from "./components/UserWelcome";
 import Login from "./pages/Login/Login";
 import PredictionsPage from "./pages/Predictions/Predictions";
 import NewPrediction from "./pages/Predictions/NewPrediction";
@@ -64,6 +65,8 @@ function Sidebar({ page, setPage, logout }: {
           <span className="sidebar-brand-sub">Sistema ML Predictivo</span>
         </div>
       </div>
+
+      <UserWelcome />
 
       {/* Nav */}
       <nav className="sidebar-nav">

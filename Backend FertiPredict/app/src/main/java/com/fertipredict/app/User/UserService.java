@@ -49,6 +49,7 @@ public class UserService {
             .username(user.username)
             .names(user.names)
             .lastnames(user.lastnames)
+                .role(user.getRole())
             .build();
             return userDTO;
         }
@@ -64,6 +65,7 @@ public class UserService {
                 .username(user.username)
                 .names(user.names)
                 .lastnames(user.lastnames)
+                .role(user.getRole())
                 .build();
         }
         return null;

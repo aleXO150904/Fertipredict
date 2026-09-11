@@ -5,6 +5,7 @@ export interface UserDTO {
   username: string; // Correo electrónico
   names: string;
   lastnames: string;
+  role?: string;
 }
 
 export interface UpdateUserRequest {
@@ -22,6 +23,7 @@ export const userService = {
   
   async updateUser(data: UpdateUserRequest): Promise<{ message: string }> {
     const response = await api.put("/user", data);
+    window.dispatchEvent(new Event("fertipredict:profile-updated"));
     return response.data;
   }
 };

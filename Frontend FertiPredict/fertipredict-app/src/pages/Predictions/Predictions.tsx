@@ -40,6 +40,16 @@ function getCoupleId(pred: PredictionDTO): string {
   return id ? `CPL-${String(id).padStart(4, "0")}` : "—";
 }
 
+function exportPredictionsToExcel(rows: PredictionDTO[]) {
+  const header = ["ID", "Pareja / Pacientes", "ID de pareja", "Fecha", "Nivel de riesgo", "Probabilidad"];
+  const esc = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
+  const body = rows.map(pred => [formatId(pred.id), getCoupleName(pred), getCoupleId(pred), formatDate(pred.date), pred.riskLevel || "—", formatProbability(pred.probability)]);
+  const table = [header, ...body].map((row, index) => `<tr>${row.map(value => `<${index ? "td" : "th"}>${esc(String(value))}</${index ? "td" : "th"}>`).join("")}</tr>`).join("");
+  const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px}th{background:#4f46e5;color:#fff}</style></head><body><table>${table}</table></body></html>`;
+  const url = URL.createObjectURL(new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" }));
+  const link = document.createElement("a"); link.href = url; link.download = `fertipredict-predicciones-${new Date().toISOString().slice(0, 10)}.xls`; link.click(); URL.revokeObjectURL(url);
+}
+
 function formatProbability(prob: number): string {
   if (prob === undefined || prob === null) return "—";
   const val = prob > 1 ? prob : prob * 100;
@@ -408,6 +418,7 @@ export default function PredictionsPage({
           </svg>
           Nueva Predicción
         </button>
+        <button className="btn-outline export-button" type="button" onClick={() => exportPredictionsToExcel(filtered)} disabled={loading || filtered.length === 0} title="Exportar las predicciones visibles a Excel">Exportar a Excel</button>
       </div>
 
       {/* Toolbar */}

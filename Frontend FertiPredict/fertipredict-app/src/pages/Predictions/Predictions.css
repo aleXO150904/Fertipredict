@@ -4,6 +4,7 @@
   align-items: center;
   gap: 6px;
 }
+.export-button { margin-left: 8px; white-space: nowrap; }
 
 .action-btn {
   width: 30px;
