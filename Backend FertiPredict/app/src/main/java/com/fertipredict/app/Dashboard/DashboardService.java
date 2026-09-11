@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 public class DashboardService {
 
     private final PredictionRepository predictionRepository;
-    private final CoupleRepository coupleRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ── Mapeo feature → categoría agrupada ─────────────────
@@ -35,6 +35,8 @@ public class DashboardService {
 
         // Factor Femenino
         FEATURE_CATEGORY_MAP.put("Hormona_AMH", "Factor Femenino");
+        FEATURE_CATEGORY_MAP.put("Hormona_Antimulleriana_(amh)", "Factor Femenino");
+        FEATURE_CATEGORY_MAP.put("hormona_foliculoestimulante_(fsh)", "Factor Femenino");
         FEATURE_CATEGORY_MAP.put("Hormona_FSH", "Factor Femenino");
         FEATURE_CATEGORY_MAP.put("Ciclo_Menstrual", "Factor Femenino");
         FEATURE_CATEGORY_MAP.put("PCOS", "Factor Femenino");
@@ -62,106 +64,43 @@ public class DashboardService {
         FEATURE_CATEGORY_MAP.put("Exposicion_Toxicos_Calor_Masculino", "Exposición Ambiental");
     }
 
-    // ── 1. Métricas generales ──────────────────────────────
-    public DashboardMetricsDTO getMetrics() {
-        List<Prediction> all = predictionRepository.findAll();
-
-        long totalCouples = all.stream()
-                .map(p -> p.getCouple().getId())
-                .distinct()
-                .count();
-
-        long detectedCases = all.stream()
-                .filter(p -> "HIGH".equalsIgnoreCase(p.getRiskLevel()))
-                .count();
-
-        double modelAccuracy = 94.3;
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfThisMonth = now.withDayOfMonth(1).toLocalDate().atStartOfDay();
-        LocalDateTime startOfLastMonth = startOfThisMonth.minusMonths(1);
-
-        long predictionsThisMonth = all.stream()
-                .filter(p -> !p.getDate().isBefore(startOfThisMonth))
-                .count();
-        long predictionsLastMonth = all.stream()
-                .filter(p -> !p.getDate().isBefore(startOfLastMonth) && p.getDate().isBefore(startOfThisMonth))
-                .count();
-
-        double predictionsChange = percentChange(predictionsLastMonth, predictionsThisMonth);
-
-        long couplesThisMonth = all.stream()
-                .filter(p -> !p.getDate().isBefore(startOfThisMonth))
-                .map(p -> p.getCouple().getId())
-                .distinct()
-                .count();
-        long couplesLastMonth = all.stream()
-                .filter(p -> !p.getDate().isBefore(startOfLastMonth) && p.getDate().isBefore(startOfThisMonth))
-                .map(p -> p.getCouple().getId())
-                .distinct()
-                .count();
-
-        double couplesChange = percentChange(couplesLastMonth, couplesThisMonth);
-
-        long thisMonthHigh = all.stream()
-                .filter(p -> !p.getDate().isBefore(startOfThisMonth) && "HIGH".equalsIgnoreCase(p.getRiskLevel()))
-                .count();
-        long lastMonthHigh = all.stream()
-                .filter(p -> !p.getDate().isBefore(startOfLastMonth) && p.getDate().isBefore(startOfThisMonth)
-                        && "HIGH".equalsIgnoreCase(p.getRiskLevel()))
-                .count();
-
-        double detectedChange = percentChange(lastMonthHigh, thisMonthHigh);
-
-        return DashboardMetricsDTO.builder()
-                .predictionsThisMonth(predictionsThisMonth)
-                .totalCouples(totalCouples)
-                .modelAccuracy(modelAccuracy)
-                .detectedCases(detectedCases)
-                .predictionsChange(round1(predictionsChange))
-                .couplesChange(round1(couplesChange))
-                .accuracyChange(2.1)
-                .detectedChange(round1(detectedChange))
-                .build();
+    private List<Prediction> predictions(DateRange range) {
+        return predictionRepository.findByDateGreaterThanEqualAndDateLessThan(
+            range.start().atStartOfDay(), range.end().plusDays(1).atStartOfDay());
+    }
+    private long couples(List<Prediction> predictions) {
+        return predictions.stream().map(p -> p.getCouple().getId()).distinct().count();
+    }
+    private long high(List<Prediction> predictions) {
+        return predictions.stream().filter(p -> "HIGH".equalsIgnoreCase(p.getRiskLevel())).count();
     }
 
-    // ── 2. Tendencia mensual (últimos 6 meses) ─────────────
-    public List<MonthlyTrendDTO> getMonthlyTrend() {
-        List<Prediction> all = predictionRepository.findAll();
-        LocalDateTime now = LocalDateTime.now();
+    public DashboardMetricsDTO getMetrics(DateRange range) {
+        var current = predictions(range);
+        var previous = predictions(range.previous());
+        return DashboardMetricsDTO.builder()
+            .predictionsInPeriod(current.size()).totalCouples(couples(current)).detectedCases(high(current))
+            .highRiskPercentage(current.isEmpty() ? 0 : round1(100.0 * high(current) / current.size()))
+            .predictionsChange(percentChange(previous.size(), current.size()))
+            .couplesChange(percentChange(couples(previous), couples(current)))
+            .detectedChange(percentChange(high(previous), high(current))).build();
+    }
 
-        List<MonthlyTrendDTO> result = new ArrayList<>();
-
-        for (int i = 5; i >= 0; i--) {
-            LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1).toLocalDate().atStartOfDay();
-            LocalDateTime monthEnd = monthStart.plusMonths(1);
-
-            long predictions = all.stream()
-                    .filter(p -> !p.getDate().isBefore(monthStart) && p.getDate().isBefore(monthEnd))
-                    .count();
-
-            long detections = all.stream()
-                    .filter(p -> !p.getDate().isBefore(monthStart) && p.getDate().isBefore(monthEnd)
-                            && "HIGH".equalsIgnoreCase(p.getRiskLevel()))
-                    .count();
-
-            String monthLabel = monthStart.getMonth()
-                    .getDisplayName(TextStyle.SHORT, new Locale("es", "ES"));
-            monthLabel = capitalize(monthLabel);
-
-            result.add(MonthlyTrendDTO.builder()
-                    .month(monthLabel)
-                    .predictions(predictions)
-                    .detections(detections)
-                    .build());
+    public List<MonthlyTrendDTO> getMonthlyTrend(DateRange range) {
+        var all = predictions(range);
+        var grouped = all.stream().collect(Collectors.groupingBy(p -> YearMonth.from(p.getDate())));
+        var result = new ArrayList<MonthlyTrendDTO>();
+        for (var month = YearMonth.from(range.start()); !month.isAfter(YearMonth.from(range.end())); month = month.plusMonths(1)) {
+            var rows = grouped.getOrDefault(month, List.of());
+            result.add(MonthlyTrendDTO.builder().month(month.toString())
+                .predictions(rows.size()).detections(high(rows)).build());
         }
-
         return result;
     }
 
     // ── 3. Distribución de factores (REAL, basado en SHAP) ─
-    public List<FactorItemDTO> getFactorDistribution() {
-        List<Prediction> all = predictionRepository.findAll();
+    public List<FactorItemDTO> getFactorDistribution(DateRange range) {
+        List<Prediction> all = predictions(range);
 
         // Acumular |SHAP| promedio por categoría agrupada
         Map<String, Double> categorySum = new HashMap<>();
@@ -178,6 +117,7 @@ public class DashboardService {
 
                 for (Map.Entry<String, Double> entry : shapValues.entrySet()) {
                     String category = FEATURE_CATEGORY_MAP.getOrDefault(entry.getKey(), "Otros");
+                    if (entry.getValue() == null || !Double.isFinite(entry.getValue())) continue;
                     double absValue = Math.abs(entry.getValue());
 
                     categorySum.merge(category, absValue, Double::sum);
@@ -189,16 +129,7 @@ public class DashboardService {
             }
         }
 
-        if (categorySum.isEmpty()) {
-            // Sin datos SHAP aún: fallback a valores fijos
-            return List.of(
-                    FactorItemDTO.builder().factor("Edad").percentage(28).build(),
-                    FactorItemDTO.builder().factor("Factor Femenino").percentage(22).build(),
-                    FactorItemDTO.builder().factor("Factor Masculino").percentage(18).build(),
-                    FactorItemDTO.builder().factor("Estilo de Vida").percentage(15).build(),
-                    FactorItemDTO.builder().factor("Otros").percentage(17).build()
-            );
-        }
+        if (categorySum.isEmpty()) return List.of();
 
         // Promedio por categoría
         Map<String, Double> categoryAvg = new HashMap<>();
@@ -208,6 +139,8 @@ public class DashboardService {
 
         // Normalizar a porcentajes que sumen 100
         double totalAvg = categoryAvg.values().stream().mapToDouble(Double::doubleValue).sum();
+
+        if (totalAvg == 0) return List.of();
 
         List<Map.Entry<String, Double>> sorted = categoryAvg.entrySet().stream()
                 .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
@@ -242,8 +175,8 @@ public class DashboardService {
     }
 
     // ── 4. Categorización por nivel de riesgo ──────────────
-    public RiskDistributionDTO getRiskDistribution() {
-        List<Prediction> all = predictionRepository.findAll();
+    public RiskDistributionDTO getRiskDistribution(DateRange range) {
+        List<Prediction> all = predictions(range);
 
         Map<String, Long> counts = all.stream()
                 .collect(Collectors.groupingBy(
@@ -259,11 +192,9 @@ public class DashboardService {
     }
 
     // ── Helpers ─────────────────────────────────────────────
-    private double percentChange(long previous, long current) {
-        if (previous == 0) {
-            return current > 0 ? 100.0 : 0.0;
-        }
-        return ((double) (current - previous) / previous) * 100.0;
+    private Double percentChange(long previous, long current) {
+        if (previous == 0) return current == 0 ? 0.0 : null;
+        return round1(((double) (current - previous) / previous) * 100.0);
     }
 
     private double round1(double value) {

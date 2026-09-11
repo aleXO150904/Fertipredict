@@ -10,6 +10,14 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, Long>{
     Optional<User> findByUsername(String username);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.username = :username")
+    Optional<User> lockByUsername(@Param("username") String username);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.resetTokenHash = :hash")
+    Optional<User> lockByResetTokenHash(@Param("hash") String hash);
+
     @Modifying
     @Query(value = "update users u set u.names = :names, u.lastnames = :lastnames where u.id = :id", nativeQuery = true)
     void updateUser(

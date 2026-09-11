@@ -7,12 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DashboardMetricsDTO {
-    private long predictionsThisMonth;
+    private long predictionsInPeriod;
     private long totalCouples;
-    private double modelAccuracy;
+    private double highRiskPercentage;
     private long detectedCases;
-    private double predictionsChange;
-    private double couplesChange;
-    private double accuracyChange;
-    private double detectedChange;
+    private Double predictionsChange;
+    private Double couplesChange;
+    private Double detectedChange;
 }

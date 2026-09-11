@@ -38,6 +38,14 @@ public class User implements UserDetails{
     String names;
     @Column(nullable = false)
     String password;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    String resetTokenHash;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    java.time.Instant resetTokenExpiresAt;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    java.time.Instant resetRequestedAt;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    Long credentialsVersion;
     @Enumerated(EnumType.STRING)
     Role role;
 

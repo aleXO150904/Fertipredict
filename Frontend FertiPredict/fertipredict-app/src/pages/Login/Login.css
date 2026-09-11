@@ -302,3 +302,5 @@
   color: var(--color-primary-light);
   text-decoration: underline;
 }
+.recovery-status { max-width: 360px; color: var(--color-ink); line-height: 1.6; }
+.recovery-back { margin-top: 24px; }

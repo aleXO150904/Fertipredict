@@ -22,11 +22,17 @@ public class UserService {
         user.setLastnames(userRequest.lastnames);
         
         if (userRequest.username != null && !userRequest.username.trim().isEmpty()) {
+            if (!userRequest.username.equals(user.getUsername())) {
+                user.setResetTokenHash(null);
+                user.setResetTokenExpiresAt(null);
+            }
             user.setUsername(userRequest.username);
         }
         
         if (userRequest.password != null && !userRequest.password.trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userRequest.password));
+            user.setResetTokenHash(null);
+            user.setResetTokenExpiresAt(null);
         }
         
         userRepository.save(user);

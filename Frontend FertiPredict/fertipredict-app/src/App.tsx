@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import PasswordRecovery from "./pages/Login/PasswordRecovery";
 import Login from "./pages/Login/Login";
 import PredictionsPage from "./pages/Predictions/Predictions";
 import NewPrediction from "./pages/Predictions/NewPrediction";
@@ -128,13 +129,33 @@ function AppContent() {
   const { isAuthenticated, logout } = useAuth();
   const [page, setPage] = useState<Page>("predictions");
   const [editPrediction, setEditPrediction] = useState<any>(null);
-  const [authPage, setAuthPage] = useState<"login" | "register">("login")
+  const [authPage, setAuthPage] = useState<"login" | "register" | "forgot">("login");
+  const [resetToken, setResetToken] = useState<string | undefined>(() => {
+    const hash = window.location.hash;
+    return hash.startsWith("#reset-password=") ? hash.slice("#reset-password=".length) || "invalid" : undefined;
+  });
+  useEffect(() => {
+    function readResetLink() {
+      if (window.location.hash.startsWith("#reset-password=")) {
+        setResetToken(window.location.hash.slice("#reset-password=".length) || "invalid");
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    }
+    readResetLink();
+    window.addEventListener("hashchange", readResetLink);
+    return () => window.removeEventListener("hashchange", readResetLink);
+  }, []);
+  if (resetToken !== undefined) return <PasswordRecovery token={resetToken} onLogin={() => {
+    setResetToken(undefined); logout(); setAuthPage("login");
+  }} />;
 
   if (!isAuthenticated) {
+    if (authPage === "forgot") return <PasswordRecovery onLogin={() => setAuthPage("login")} />;
     return authPage === "login"
       ? (
           <Login 
-            onRegister={() => setAuthPage("register")} 
+            onRegister={() => setAuthPage("register")}
+            onForgotPassword={() => setAuthPage("forgot")}
           />
         )
       : (

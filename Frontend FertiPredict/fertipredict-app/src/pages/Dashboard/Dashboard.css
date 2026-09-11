@@ -7,6 +7,26 @@
   padding: 36px 40px 48px;
 }
 
+.db-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 16px; }
+.db-filters label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--color-ink-soft); }
+.db-filters input, .db-filters select { padding: 10px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface-solid); color: var(--color-ink); font: inherit; }
+.db-period, .db-kpi-detail { font-size: 12px; color: var(--color-ink-soft); line-height: 1.6; margin: 12px 0 20px; }
+.db-kpi-detail { margin-bottom: 0; }
+.db-chart-detail { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.6; color: var(--color-ink); min-height: 68px; margin-top: 12px; }
+.db-chart-target { cursor: pointer; }
+.db-chart-target:focus-visible { outline: 2px solid var(--color-primary-light); outline-offset: 2px; }
+.db-chart-legend { display: flex; gap: 20px; justify-content: center; font-size: 12px; color: var(--color-ink-soft); }
+.db-chart-legend span:first-child::first-letter { color: #17C3C3; }
+.db-chart-legend span:last-child::first-letter { color: var(--color-success); }
+.db-factor-legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.db-factor-legend button { display: flex; align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-ink); background: var(--color-bg); font-size: 12px; }
+.db-factor-legend button span { width: 10px; height: 10px; border-radius: 50%; }
+.db-empty { padding: 32px 16px; color: var(--color-ink-soft); text-align: center; line-height: 1.6; }
+.db-data-table { margin-top: 14px; font-size: 13px; color: var(--color-ink); max-height: 260px; overflow: auto; }
+.db-data-table summary { cursor: pointer; }
+.db-data-table table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.db-data-table td, .db-data-table th { padding: 8px; text-align: left; border-bottom: 1px solid var(--color-border); }
+
 /* ── KPI Grid ─────────────────────────────────────────────── */
 .db-kpi-grid {
   display: grid;

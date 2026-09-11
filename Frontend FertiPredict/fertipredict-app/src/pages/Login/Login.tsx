@@ -4,10 +4,11 @@ import { useAuth } from "../../context/AuthContext";
 import "./Login.css";
 
 type LoginProps = {
-    onRegister: () => void; 
+    onRegister: () => void;
+    onForgotPassword: () => void;
   }
 
-export default function Login({onRegister} : LoginProps) {
+export default function Login({onRegister, onForgotPassword} : LoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +94,8 @@ export default function Login({onRegister} : LoginProps) {
               required
             />
           </div>
+
+          <button type="button" className="link-button" onClick={onForgotPassword}>¿Olvidaste tu contraseña?</button>
 
           {error && <div className="login-error">{error}</div>}
 

@@ -21,7 +21,10 @@ public class JwtService {
     private static final String SECRET_KEY = "586E3272357538782F413F4428472B4B6250655368566B597033733676397924";
 
     public String getToken(UserDetails user){
-        return getToken(new HashMap<>(), user);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("cv", user instanceof com.fertipredict.app.User.User account
+            && account.getCredentialsVersion() != null ? account.getCredentialsVersion() : 0L);
+        return getToken(claims, user);
     }
 
     private String getToken(Map<String, Object> extraClaims, UserDetails user) {
@@ -46,7 +49,11 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername())&& !isTokenExpired(token));
+        Number version = getClaim(token, claims -> (Number) claims.get("cv"));
+        long current = userDetails instanceof com.fertipredict.app.User.User account
+            && account.getCredentialsVersion() != null ? account.getCredentialsVersion() : 0L;
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token)
+            && (version == null ? 0L : version.longValue()) == current;
     }
 
     private Claims getAllClaims(String token){
