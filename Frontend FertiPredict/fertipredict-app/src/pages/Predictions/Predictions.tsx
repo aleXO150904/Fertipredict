@@ -554,7 +554,7 @@ export default function PredictionsPage({
                         </button>
                         <button
                           className="action-btn action-btn--edit"
-                          disabled={pred.userId !== user?.id}
+                          disabled={!user || (user.role !== "ADMIN" && pred.userId !== user.id)}
                           title="Editar predicción"
                           onClick={() => onEditPrediction?.(pred)}
                         >
@@ -565,7 +565,7 @@ export default function PredictionsPage({
                         </button>
                         <button
                           className="action-btn action-btn--delete"
-                          disabled={pred.userId !== user?.id}
+                          disabled={!user || (user.role !== "ADMIN" && pred.userId !== user.id)}
                           title="Eliminar predicción"
                           onClick={() => { setDeleteError(null); setDeletePred(pred); }}
                         >

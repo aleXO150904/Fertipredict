@@ -2,7 +2,7 @@
 
 El rol ADMIN habilita «Administrar usuarios» en el menú, permite cambiar entre Médico (USER) y Administrador (ADMIN), y activar o desactivar cuentas. El registro público continúa creando solamente cuentas USER activas.
 
-El listado de predicciones y los cuatro indicadores/gráficos del dashboard son globales para ADMIN; USER consulta únicamente sus propias predicciones. Ambos conservan los filtros y exportaciones. La edición y eliminación de predicciones corresponde a su autor.
+El listado de predicciones y los cuatro indicadores/gráficos del dashboard son globales para ADMIN; USER consulta únicamente sus propias predicciones. Ambos conservan los filtros y exportaciones. ADMIN puede editar y eliminar cualquier predicción; USER solo puede modificar las propias. La edición por un administrador conserva el autor original y recalcula el resultado con el modelo. La eliminación mantiene la confirmación existente en la interfaz.
 
 Desactivar una cuenta impide iniciar sesión y bloquea sus siguientes solicitudes autenticadas. El contador credentialsVersion invalida sus tokens anteriores incluso después de reactivarla. Los roles se consultan desde la base de datos en cada solicitud. El administrador no puede desactivar ni degradar su propia cuenta. Las modificaciones administrativas se serializan con bloqueo de filas para evitar pérdida concurrente de los administradores activos.
 

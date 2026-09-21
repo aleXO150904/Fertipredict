@@ -42,9 +42,31 @@ class PredictionAccessTest {
         assertTrue(service.getPredictionsByUser().isEmpty());
         verify(predictions).findByUser_Id(2L);
     }
-    @Test void adminCanNotDeleteAnotherAuthorsPrediction() {
+    @Test void adminCanDeleteAnotherAuthorsPrediction() {
         when(current.get()).thenReturn(User.builder().id(2L).role(Role.ADMIN).build());
         when(predictions.findById(4L)).thenReturn(Optional.of(Prediction.builder().user(User.builder().id(1L).build()).build()));
-        assertThrows(ResponseStatusException.class, () -> service.deletePrediction(4L));
+        assertDoesNotThrow(() -> service.deletePrediction(4L));
+        verify(predictions).deleteById(4L);
+    }
+    @Test void adminCanRecalculateAnotherAuthorsPredictionWithoutChangingOwner() {
+        var owner = User.builder().id(1L).role(Role.USER).build();
+        var prediction = Prediction.builder().id(4L).user(owner).build();
+        when(current.get()).thenReturn(User.builder().id(2L).role(Role.ADMIN).build());
+        when(predictions.findById(4L)).thenReturn(Optional.of(prediction));
+        var input = mock(PredictionDTO.class, RETURNS_DEEP_STUBS);
+        // Stop at the external ML boundary: authorization must permit recalculation.
+        var unavailable = new IllegalStateException("ML unavailable in test");
+        when(ml.getPrediction(any())).thenThrow(unavailable);
+        assertSame(unavailable, assertThrows(IllegalStateException.class, () -> service.updatePrediction(4L, input)));
+        verify(ml).getPrediction(any());
+        assertSame(owner, prediction.getUser());
+        verify(predictions, never()).save(any());
+    }
+    @Test void doctorCanDeleteOwnPrediction() {
+        var owner = User.builder().id(1L).role(Role.USER).build();
+        when(current.get()).thenReturn(owner);
+        when(predictions.findById(4L)).thenReturn(Optional.of(Prediction.builder().user(owner).build()));
+        service.deletePrediction(4L);
+        verify(predictions).deleteById(4L);
     }
 }
