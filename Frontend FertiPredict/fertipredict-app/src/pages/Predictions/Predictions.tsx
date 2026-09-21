@@ -1,3 +1,4 @@
+import { formatProbability, probabilityBarWidth as getProbabilityPercent } from "../../utils/probability";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import type { ReactElement } from "react";
@@ -17,6 +18,7 @@ function formatDate(iso: string): string {
 function getProbabilityClass(riskLevel: string): string {
   switch (riskLevel?.toUpperCase()) {
     case "HIGH": return "high";
+    case "MODERATE":
     case "MEDIUM": return "medium";
     case "LOW": return "low";
     default: return "";
@@ -42,25 +44,13 @@ function getCoupleId(pred: PredictionDTO): string {
 }
 
 function exportPredictionsToExcel(rows: PredictionDTO[]) {
-  const header = ["ID", "Pareja / Pacientes", "ID de pareja", "Fecha", "Nivel de riesgo", "Probabilidad"];
+  const header = ["ID", "Pareja / Pacientes", "ID de pareja", "Fecha", "Nivel de riesgo", "Probabilidad de riesgo alto (%)"];
   const esc = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
   const body = rows.map(pred => [formatId(pred.id), getCoupleName(pred), getCoupleId(pred), formatDate(pred.date), pred.riskLevel || "—", formatProbability(pred.probability)]);
   const table = [header, ...body].map((row, index) => `<tr>${row.map(value => `<${index ? "td" : "th"}>${esc(String(value))}</${index ? "td" : "th"}>`).join("")}</tr>`).join("");
   const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px}th{background:#4f46e5;color:#fff}</style></head><body><table>${table}</table></body></html>`;
   const url = URL.createObjectURL(new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" }));
   const link = document.createElement("a"); link.href = url; link.download = `fertipredict-predicciones-${new Date().toISOString().slice(0, 10)}.xls`; link.click(); URL.revokeObjectURL(url);
-}
-
-function formatProbability(prob: number): string {
-  if (prob === undefined || prob === null) return "—";
-  const val = prob;
-  return `${val.toFixed(1)}%`;
-}
-
-function getProbabilityPercent(prob: number): number {
-  if (prob === undefined || prob === null) return 0;
-  const val = prob;
-  return Math.min(100, Math.max(0, val));
 }
 
 /* ── RiskBadge ───────────────────────────────────────────── */
@@ -513,7 +503,7 @@ export default function PredictionsPage({
                 {user?.role === "ADMIN" && <th>Registrado por</th>}
                 <th>Fecha</th>
                 <th>Nivel de Riesgo</th>
-                <th>Probabilidad</th>
+                <th>Probabilidad de riesgo alto</th>
                 <th>Acciones</th>
               </tr>
             </thead>

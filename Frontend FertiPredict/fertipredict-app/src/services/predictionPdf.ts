@@ -7,10 +7,8 @@ const text = (value: unknown) => value === null || value === undefined || value 
 const yesNo = (value: boolean | null | undefined) => value == null ? "No registrado" : value ? "Sí" : "No";
 const option = (value: number | null | undefined, labels: string[]) => value == null ? "No registrado" : labels[value] ?? "No registrado";
 
-/** The API returns probability on a 0–100 scale, including values below 1%. */
-export function predictionProbability(value: number): string {
-  return Number.isFinite(value) && value >= 0 && value <= 100 ? `${value.toFixed(1)}%` : "No registrado";
-}
+import { formatProbability as predictionProbability } from "../utils/probability";
+export { predictionProbability };
 
 export function createPredictionPdf(pred: PredictionDTO, featureLabels: Record<string, string> = {}) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });

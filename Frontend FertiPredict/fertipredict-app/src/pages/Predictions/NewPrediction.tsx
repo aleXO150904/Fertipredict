@@ -1,3 +1,4 @@
+import { formatProbability } from "../../utils/probability";
 import { useState, type FormEvent } from "react";
 import { predictionService } from "../../services/predictionService";
 import type { PredictionDTO, CoupleDTO, PatientDTO, MaleFactorsDTO, FemaleFactorsDTO } from "../../types/prediction";
@@ -207,19 +208,11 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
   }
 
   function getInterpretation(riskLevel: string, probability: number) {
-    const pct = probability * (probability <= 1 ? 100 : 1);
+    const pct = formatProbability(probability);
     const level = riskLevel.toUpperCase();
 
-    if (level === "LOW") {
-      return `Con un ${pct.toFixed(1)}% de probabilidad de riesgo alto, la pareja presenta indicadores clínicos favorables. La posibilidad de infertilidad es baja y no se requieren intervenciones inmediatas.`;
-    }
-    if (level === "MODERATE" || level === "MEDIUM") {
-      return `Con un ${pct.toFixed(1)}% de probabilidad de riesgo alto, la pareja presenta factores de riesgo moderados. Se recomienda evaluación más detallada y posible intervención clínica.`;
-    }
-    if (level === "HIGH") {
-      return `Con un ${pct.toFixed(1)}% de probabilidad de riesgo alto, el modelo identifica un perfil de alto riesgo de infertilidad. Se recomienda evaluación especializada prioritaria.`;
-    }
-    return `El modelo predice un ${pct.toFixed(1)}% de probabilidad de riesgo alto.`;
+    const labels: Record<string, string> = { LOW: "bajo", MODERATE: "medio", MEDIUM: "medio", HIGH: "alto" };
+    return `El modelo clasifica el riesgo como ${labels[level] || riskLevel}. La probabilidad de la clase de riesgo alto es ${pct}; no es la probabilidad de la clase seleccionada ni un diagnóstico de infertilidad. El resultado requiere interpretación profesional.`;
   }
 
   return (
@@ -242,7 +235,7 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
             <span className="result-label">{isEditing ? "Predicción Actualizada" : "Predicción Completada"}</span>
           </div>
           <div className="result-prob" style={{ marginBottom: '12px' }}>
-            Probabilidad de infertilidad: <strong>{(result.probability * (result.probability <= 1 ? 100 : 1)).toFixed(1)}%</strong>
+            Probabilidad de riesgo alto: <strong>{formatProbability(result.probability)}</strong>
           </div>
 
           <p className="result-interpretation" style={{ marginBottom: '16px' }}>
