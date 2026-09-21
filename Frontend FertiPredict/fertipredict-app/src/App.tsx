@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import PasswordRecovery from "./pages/Login/PasswordRecovery";
+import AdminUsers from "./pages/Admin/AdminUsers";
 import UserWelcome from "./components/UserWelcome";
 import Login from "./pages/Login/Login";
 import PredictionsPage from "./pages/Predictions/Predictions";
@@ -11,7 +12,7 @@ import Register from "./pages/Register/Register";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Settings from "./pages/Settings/Settings";
 
-type Page = "predictions" | "new_prediction" | "edit_prediction" | "dashboard" | "settings";
+type Page = "users" | "predictions" | "new_prediction" | "edit_prediction" | "dashboard" | "settings";
 
 function ThemeToggleButton() {
   const { theme, toggleTheme } = useTheme();
@@ -51,6 +52,7 @@ function Sidebar({ page, setPage, logout }: {
   setPage: (p: Page) => void;
   logout: () => void;
 }) {
+  const { user } = useAuth();
   return (
     <aside className="sidebar">
       {/* Brand */}
@@ -70,6 +72,7 @@ function Sidebar({ page, setPage, logout }: {
 
       {/* Nav */}
       <nav className="sidebar-nav">
+        {user?.role === "ADMIN" && <button className={`sidebar-nav-item ${page === "users" ? "active" : ""}`} onClick={() => setPage("users")}>Administrar usuarios</button>}
         <button
           id="nav-predicciones"
           className={`sidebar-nav-item ${page === "predictions" ? "active" : ""}`}
@@ -129,7 +132,7 @@ function Sidebar({ page, setPage, logout }: {
 
 
 function AppContent() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const [page, setPage] = useState<Page>("predictions");
   const [editPrediction, setEditPrediction] = useState<any>(null);
   const [authPage, setAuthPage] = useState<"login" | "register" | "forgot">("login");
@@ -178,6 +181,7 @@ function AppContent() {
         {page === "new_prediction" && <NewPrediction onBack={() => setPage("predictions")} />}
         {page === "edit_prediction" && <NewPrediction onBack={() => { setEditPrediction(null); setPage("predictions"); }} predictionToEdit={editPrediction} />}
         {page === "dashboard" && <Dashboard/>}
+        {page === "users" && (user?.role === "ADMIN" ? <AdminUsers /> : <p>No tienes acceso a la administración de usuarios.</p>)}
         {page === "settings" && <Settings />}
       </main>
     </div>

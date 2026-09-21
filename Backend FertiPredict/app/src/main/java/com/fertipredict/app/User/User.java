@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 @Entity
+@org.hibernate.annotations.DynamicUpdate
 @Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"username"})})
 public class User implements UserDetails{
     @Id
@@ -48,6 +49,9 @@ public class User implements UserDetails{
     Long credentialsVersion;
     @Enumerated(EnumType.STRING)
     Role role;
+    @Builder.Default
+    @Column(columnDefinition = "boolean default true")
+    Boolean active = true;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -71,6 +75,6 @@ public class User implements UserDetails{
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !Boolean.FALSE.equals(active);
     }
 }

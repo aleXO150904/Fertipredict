@@ -1,3 +1,4 @@
+import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import type { ReactElement } from "react";
 import { predictionService } from "../../services/predictionService";
@@ -378,6 +379,7 @@ export default function PredictionsPage({
   onNewPrediction?: () => void;
   onEditPrediction?: (pred: PredictionDTO) => void;
 }) {
+  const { user } = useAuth();
   const [predictions, setPredictions] = useState<PredictionDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -418,7 +420,7 @@ export default function PredictionsPage({
       formatId(p.id).toLowerCase().includes(q) ||
       getCoupleName(p).toLowerCase().includes(q) ||
       getCoupleId(p).toLowerCase().includes(q) ||
-      p.riskLevel?.toLowerCase().includes(q)
+      p.riskLevel?.toLowerCase().includes(q) || p.createdBy?.toLowerCase().includes(q)
     );
   });
 
@@ -428,7 +430,7 @@ export default function PredictionsPage({
       <div className="page-header">
         <div className="page-header-text">
           <h1>Predicciones Registradas</h1>
-          <p>Gestiona y visualiza todas las predicciones del sistema ML</p>
+          <p>{user?.role === "ADMIN" ? "Vista global: predicciones de todos los usuarios" : "Gestiona y visualiza tus predicciones"}</p>
         </div>
         <button className="btn-primary" id="btn-nueva-prediccion" onClick={onNewPrediction}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -508,6 +510,7 @@ export default function PredictionsPage({
               <tr>
                 <th>ID</th>
                 <th>Pareja / Pacientes</th>
+                {user?.role === "ADMIN" && <th>Registrado por</th>}
                 <th>Fecha</th>
                 <th>Nivel de Riesgo</th>
                 <th>Probabilidad</th>
@@ -529,6 +532,7 @@ export default function PredictionsPage({
                         <span className="couple-cell-sub">{getCoupleId(pred)}</span>
                       </div>
                     </td>
+                    {user?.role === "ADMIN" && <td>{pred.createdBy || "No registrado"}</td>}
                     <td>
                       <span className="date-cell">{formatDate(pred.date)}</span>
                     </td>
@@ -560,6 +564,7 @@ export default function PredictionsPage({
                         </button>
                         <button
                           className="action-btn action-btn--edit"
+                          disabled={pred.userId !== user?.id}
                           title="Editar predicción"
                           onClick={() => onEditPrediction?.(pred)}
                         >
@@ -570,6 +575,7 @@ export default function PredictionsPage({
                         </button>
                         <button
                           className="action-btn action-btn--delete"
+                          disabled={pred.userId !== user?.id}
                           title="Eliminar predicción"
                           onClick={() => { setDeleteError(null); setDeletePred(pred); }}
                         >

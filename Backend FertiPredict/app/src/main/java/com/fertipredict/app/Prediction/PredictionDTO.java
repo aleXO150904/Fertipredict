@@ -15,6 +15,8 @@ import com.fertipredict.app.Couple.CoupleDTO;
 @AllArgsConstructor
 public class PredictionDTO {
     Long id;
+    Long userId;
+    String createdBy;
     String riskLevel;
     Float probability;
     Map<String, Double> explanation;

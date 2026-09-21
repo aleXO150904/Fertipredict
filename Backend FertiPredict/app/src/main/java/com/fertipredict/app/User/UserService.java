@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CurrentUser currentUser;
 
     @Transactional
     public UserResponse updateUser(UserRequest userRequest) {
@@ -41,6 +42,9 @@ public class UserService {
     }
 
     public UserDTO getUser(Long id) {
+        User actor = currentUser.get();
+        if (actor.getRole() != Role.ADMIN && !actor.getId().equals(id))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN);
         User user = userRepository.findById(id).orElse(null);
 
         if (user!=null){

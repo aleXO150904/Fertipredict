@@ -42,12 +42,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         
+        try {
         username = jwtService.getUsernameFromToken(token);
 
         if (username!= null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(token, userDetails)){
+            if (userDetails.isEnabled() && jwtService.isTokenValid(token, userDetails)){
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     username, 
                     null,
@@ -59,6 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }   
         }
 
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+            SecurityContextHolder.clearContext();
+        }
         filterChain.doFilter(request, response);
     }
 

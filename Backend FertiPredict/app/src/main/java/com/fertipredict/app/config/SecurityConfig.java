@@ -36,11 +36,13 @@ public class SecurityConfig {
                 .disable())
             .authorizeHttpRequests(authRequest ->
               authRequest
-                .requestMatchers(HttpMethod.GET).permitAll()
+                .requestMatchers("/api/test", "/actuator/health").permitAll()
+                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .anyRequest().authenticated()
                 )
+            .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, error) -> response.sendError(401)))
             .sessionManagement(sessionManager->
                 sessionManager 
                   .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

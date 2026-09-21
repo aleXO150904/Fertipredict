@@ -28,6 +28,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PredictionService {
     private final PredictionRepository predictionRepository;
+    private final com.fertipredict.app.User.CurrentUser currentUser;
+
+    private void requireAccess(Prediction prediction, boolean write) {
+        User actor = currentUser.get();
+        boolean owner = prediction.getUser() != null && actor.getId().equals(prediction.getUser().getId());
+        if (!owner && (write || actor.getRole() != com.fertipredict.app.User.Role.ADMIN))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN);
+    }
     private final CoupleRepository coupleRepository;
     private final PatientService patientService;
     private final UserRepository userRepository;
@@ -119,6 +127,7 @@ public class PredictionService {
     public PredictionDTO updatePrediction(Long id, PredictionDTO predictionDTO) {
         Prediction existing = predictionRepository.findById(id).orElse(null);
         if (existing == null) return null;
+        requireAccess(existing, true);
 
         PatientDTO malePatientDTO = predictionDTO.getCouple().getMalePatient();
         PatientDTO femalePatientDTO = predictionDTO.getCouple().getFemalePatient();
@@ -191,6 +200,8 @@ public class PredictionService {
 
     @Transactional
     public void deletePrediction(Long id) {
+        Prediction prediction = predictionRepository.findById(id).orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        requireAccess(prediction, true);
         predictionRepository.deleteById(id);
     }
 
@@ -198,7 +209,7 @@ public class PredictionService {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByUsername(username).orElseThrow();
 
-        return predictionRepository.findByUser_Id(user.getId())
+        return (user.getRole() == com.fertipredict.app.User.Role.ADMIN ? predictionRepository.findAll() : predictionRepository.findByUser_Id(user.getId()))
             .stream()
             .map(p -> {
                 Patient male = p.getCouple().getPatients().stream().filter(pa -> pa.getSex() != null && pa.getSex() == 'M').findFirst().orElse(null);
@@ -210,6 +221,7 @@ public class PredictionService {
 
     public PredictionDTO getPrediction(Long id) {
         Prediction prediction = predictionRepository.findById(id).orElseThrow();
+        requireAccess(prediction, false);
         Patient male = prediction.getCouple().getPatients().stream().filter(pa -> pa.getSex() != null && pa.getSex() == 'M').findFirst().orElse(null);
         Patient female = prediction.getCouple().getPatients().stream().filter(pa -> pa.getSex() != null && pa.getSex() == 'F').findFirst().orElse(null);
         return toDTO(prediction, male, female);
@@ -261,6 +273,8 @@ public class PredictionService {
 
         return PredictionDTO.builder()
             .id(prediction.getId())
+            .userId(prediction.getUser() == null ? null : prediction.getUser().getId())
+            .createdBy(prediction.getUser() == null ? "" : prediction.getUser().getNames() + " " + prediction.getUser().getLastnames())
             .riskLevel(prediction.getRiskLevel())
             .probability(prediction.getProbability())
             .explanation(explanationMap)

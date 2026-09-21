@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class DashboardService {
 
     private final PredictionRepository predictionRepository;
+    private final com.fertipredict.app.User.CurrentUser currentUser;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ── Mapeo feature → categoría agrupada ─────────────────
@@ -65,6 +66,9 @@ public class DashboardService {
     }
 
     private List<Prediction> predictions(DateRange range) {
+        var user = currentUser.get();
+        if (user.getRole() != com.fertipredict.app.User.Role.ADMIN)
+            return predictionRepository.findByUser_IdAndDateGreaterThanEqualAndDateLessThan(user.getId(), range.start().atStartOfDay(), range.end().plusDays(1).atStartOfDay());
         return predictionRepository.findByDateGreaterThanEqualAndDateLessThan(
             range.start().atStartOfDay(), range.end().plusDays(1).atStartOfDay());
     }

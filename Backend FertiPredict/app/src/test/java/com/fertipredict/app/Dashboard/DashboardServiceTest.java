@@ -11,7 +11,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 class DashboardServiceTest {
     PredictionRepository repository = mock(PredictionRepository.class);
-    DashboardService service = new DashboardService(repository);
+    com.fertipredict.app.User.CurrentUser currentUser = mock(com.fertipredict.app.User.CurrentUser.class);
+    DashboardService service = new DashboardService(repository, currentUser);
+    @org.junit.jupiter.api.BeforeEach void authenticate() {
+        when(currentUser.get()).thenReturn(com.fertipredict.app.User.User.builder().id(1L).role(com.fertipredict.app.User.Role.ADMIN).build());
+    }
+    @Test void doctorsOnlyQueryTheirOwnPredictions() {
+        when(currentUser.get()).thenReturn(com.fertipredict.app.User.User.builder().id(9L).role(com.fertipredict.app.User.Role.USER).build());
+        when(repository.findByUser_IdAndDateGreaterThanEqualAndDateLessThan(eq(9L), any(), any())).thenReturn(List.of());
+        assertEquals(0, service.getMetrics(range).getPredictionsInPeriod());
+        verify(repository, never()).findByDateGreaterThanEqualAndDateLessThan(any(), any());
+        verify(repository, times(2)).findByUser_IdAndDateGreaterThanEqualAndDateLessThan(eq(9L), any(), any());
+    }
     DateRange range = new DateRange(LocalDate.of(2025, 12, 31), LocalDate.of(2026, 1, 2));
     Prediction prediction(String date, String risk, String explanation) {
         Couple couple = new Couple(); couple.setId(1L);

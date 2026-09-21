@@ -14,6 +14,11 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
     
     private final AuthService authService;
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<java.util.Map<String, String>> disabled() {
+        return ResponseEntity.status(403).body(java.util.Map.of("code", "ACCOUNT_DISABLED", "message", "Cuenta desactivada. Contacta con un administrador."));
+    }
     
     @PostMapping(value = "login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request)

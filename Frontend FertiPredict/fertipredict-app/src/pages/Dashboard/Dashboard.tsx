@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode, type FormEvent } from "react";
 import { api } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 import { LineChart, BarChart, PieChart, type Trend, type Factor } from "./InteractiveCharts";
 import "./Dashboard.css";
 type IconKey = "activity" | "people" | "target" | "trending";
@@ -43,6 +44,7 @@ const formattedDate = (value: string) => new Date(`${value}T12:00:00`).toLocaleD
 const changeLabel = (value: number | null) => value === null ? "Sin base de comparación" : `${value > 0 ? "+" : ""}${value.toLocaleString("es-PE")}% vs. periodo anterior`;
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [range, setRange] = useState<Range>(() => period("six"));
   const [draft, setDraft] = useState<Range>(range);
   const [preset, setPreset] = useState("six");
@@ -88,7 +90,7 @@ export default function DashboardPage() {
     { label: "Proporción de alto riesgo", value: metrics.predictionsInPeriod ? `${metrics.highRiskPercentage.toLocaleString("es-PE")}%` : "—", detail: "Sobre las predicciones del periodo", icon: "target" as IconKey },
   ] : [];
   return <div className="dashboard-page">
-    <div className="page-header"><div className="page-header-text"><h1>Dashboard</h1><p>Explora las predicciones por periodo.</p></div></div>
+    <div className="page-header"><div className="page-header-text"><h1>Dashboard</h1><p>{user?.role === "ADMIN" ? "Vista global: predicciones de todos los usuarios por periodo." : "Explora tus predicciones por periodo."}</p></div></div>
     <form className="db-filters" onSubmit={apply}>
       <label>Periodo<select value={preset} onChange={event => {
         const value = event.target.value; setPreset(value); setFormError("");

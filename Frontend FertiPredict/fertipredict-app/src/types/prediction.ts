@@ -43,6 +43,8 @@ export interface CoupleDTO {
 }
 
 export interface PredictionDTO {
+  userId?: number;
+  createdBy?: string;
   explanation: Record<string, number> | undefined;
   id: number;
   riskLevel: string;

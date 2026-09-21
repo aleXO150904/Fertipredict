@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { authService } from "../../services/authService";
+import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import "./Login.css";
 
@@ -28,7 +29,9 @@ export default function Login({onRegister, onForgotPassword} : LoginProps) {
         login(response.token);
       }, 300);
     } catch (err) {
-      setError("Usuario o contraseña incorrectos. Verifica tus datos e intenta de nuevo.");
+      setError(axios.isAxiosError(err) && err.response?.data?.code === "ACCOUNT_DISABLED"
+        ? "Tu cuenta está desactivada. Contacta con un administrador."
+        : "Usuario o contraseña incorrectos. Verifica tus datos e intenta de nuevo.");
     } finally {
       setLoading(false);
     }
