@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import BaseModel
 import joblib
 import numpy as np
@@ -9,6 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 #Para consumir la API
 app = FastAPI(title="FertiPredict ML API")
+
+@app.get("/ping", response_class=PlainTextResponse)
+def ping():
+    return "pong"
 
 app.add_middleware(
     CORSMiddleware,
