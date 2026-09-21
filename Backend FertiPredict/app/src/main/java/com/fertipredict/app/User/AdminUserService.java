@@ -16,6 +16,24 @@ public class AdminUserService {
         static Account from(User u) { return new Account(u.getId(), u.getUsername(), u.getNames(), u.getLastnames(), u.getRole(), u.isEnabled()); }
     }
     public record Change(Role role, Boolean active) {}
+    public record AccessChange(Boolean active) {}
+    public record RoleChange(Role role) {}
+    @Transactional
+    public Account updateAccess(Long id, AccessChange change) {
+        users.lockAccounts();
+        requireAdmin();
+        if (change.active() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El estado es obligatorio");
+        User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return update(id, new Change(target.getRole(), change.active()));
+    }
+    @Transactional
+    public Account updateRole(Long id, RoleChange change) {
+        users.lockAccounts();
+        requireAdmin();
+        if (change.role() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El rol es obligatorio");
+        User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return update(id, new Change(change.role(), target.isEnabled()));
+    }
     private User requireAdmin() {
         User actor = currentUser.get();
         if (actor.getRole() != Role.ADMIN) throw new ResponseStatusException(HttpStatus.FORBIDDEN);

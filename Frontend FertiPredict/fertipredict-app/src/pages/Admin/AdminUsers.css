@@ -15,6 +15,10 @@
 .admin-users small { display: block; margin-top: 6px; color: var(--color-ink-soft); }
 .admin-status { display: inline-block; padding: 5px 10px; border-radius: 20px; background: #64748b22; }
 .admin-status.is-active { color: #15803d; background: #22c55e22; }
+.admin-access-button { white-space: nowrap; min-width: 160px; }
+.admin-access-button.revoke { border-color: #dc2626; }
+.admin-access-button.grant { border-color: #16a34a; }
+.admin-users td:last-child { min-width: 200px; }
 .admin-users .admin-error { color: #dc2626; }
 .admin-note { font-size: 13px; line-height: 1.6; }
 .admin-confirm { padding: 28px; width: min(500px, 92vw); }

@@ -40,4 +40,31 @@ class AdminUserServiceTest {
         assertTrue(User.builder().build().isEnabled());
         assertTrue(User.builder().active(null).build().isEnabled());
     }
+    @Test void accessChangePreservesRoleAndRevokesTokens() {
+        when(current.get()).thenReturn(admin);
+        User target = User.builder().id(2L).role(Role.ADMIN).credentialsVersion(4L).build();
+        when(users.lockById(2L)).thenReturn(Optional.of(target));
+        when(users.save(target)).thenReturn(target);
+        var result = service.updateAccess(2L, new AdminUserService.AccessChange(false));
+        assertFalse(result.active());
+        assertEquals(Role.ADMIN, result.role());
+        assertEquals(5L, target.getCredentialsVersion());
+        service.updateAccess(2L, new AdminUserService.AccessChange(false));
+        assertEquals(5L, target.getCredentialsVersion());
+    }
+    @Test void roleChangeCannotReactivateAccount() {
+        when(current.get()).thenReturn(admin);
+        User target = User.builder().id(2L).role(Role.USER).active(false).build();
+        when(users.lockById(2L)).thenReturn(Optional.of(target));
+        when(users.save(target)).thenReturn(target);
+        var result = service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN));
+        assertFalse(result.active());
+        assertEquals(Role.ADMIN, result.role());
+    }
+    @Test void missingAccessStateIsRejected() {
+        when(current.get()).thenReturn(admin);
+        assertEquals(400, assertThrows(ResponseStatusException.class,
+            () -> service.updateAccess(2L, new AdminUserService.AccessChange(null))).getStatusCode().value());
+        verify(users, never()).save(any());
+    }
 }
