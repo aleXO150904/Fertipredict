@@ -132,7 +132,7 @@ function Sidebar({ page, setPage, logout }: {
 
 
 function AppContent() {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout, requestLogout, user } = useAuth();
   const [page, setPage] = useState<Page>("predictions");
   const [editPrediction, setEditPrediction] = useState<any>(null);
   const [authPage, setAuthPage] = useState<"login" | "register" | "forgot">("login");
@@ -172,7 +172,7 @@ function AppContent() {
 
   return (
     <div className="app-shell">
-      <Sidebar page={page} setPage={setPage} logout={logout} />
+      <Sidebar page={page} setPage={setPage} logout={requestLogout} />
       <main className="main-content">
         {page === "predictions" && <PredictionsPage
           onNewPrediction={() => setPage("new_prediction")}

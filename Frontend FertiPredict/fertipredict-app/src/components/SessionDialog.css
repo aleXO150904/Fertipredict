@@ -1,0 +1,6 @@
+.session-dialog { width: min(460px, calc(100vw - 32px)); box-sizing: border-box; border: 1px solid var(--color-border); border-radius: 18px; padding: 28px; background: var(--color-surface-solid); color: var(--color-ink); box-shadow: 0 24px 80px #0005; }
+.session-dialog { margin: auto; }
+.session-dialog::backdrop { background: #0f172a99; }
+.session-dialog h2 { margin: 0 0 16px; font-size: 22px; }
+.session-dialog p { color: var(--color-ink-soft); line-height: 1.6; }
+.session-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 24px; }
