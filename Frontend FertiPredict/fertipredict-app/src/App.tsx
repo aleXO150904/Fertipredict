@@ -11,6 +11,7 @@ import "./App.css";
 import Register from "./pages/Register/Register";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Settings from "./pages/Settings/Settings";
+import "./responsive.css";
 
 type Page = "users" | "predictions" | "new_prediction" | "edit_prediction" | "dashboard" | "settings";
 
@@ -53,6 +54,7 @@ function Sidebar({ page, setPage, logout }: {
   logout: () => void;
 }) {
   const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <aside className="sidebar">
       {/* Brand */}
@@ -68,10 +70,12 @@ function Sidebar({ page, setPage, logout }: {
         </div>
       </div>
 
+      <button type="button" className="sidebar-menu-toggle" aria-expanded={menuOpen} aria-controls="sidebar-sections" onClick={() => setMenuOpen(open => !open)}>{menuOpen ? "Cerrar menú" : "Menú"}</button>
+      <div id="sidebar-sections" className={`sidebar-sections ${menuOpen ? "is-open" : ""}`}>
       <UserWelcome />
 
       {/* Nav */}
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" aria-label="Navegación principal" onClick={() => setMenuOpen(false)}>
         {user?.role === "ADMIN" && <button className={`sidebar-nav-item ${page === "users" ? "active" : ""}`} onClick={() => setPage("users")}>Administrar usuarios</button>}
         <button
           id="nav-predicciones"
@@ -124,6 +128,7 @@ function Sidebar({ page, setPage, logout }: {
           </svg>
           Cerrar Sesión
         </button>
+      </div>
       </div>
     </aside>
   );

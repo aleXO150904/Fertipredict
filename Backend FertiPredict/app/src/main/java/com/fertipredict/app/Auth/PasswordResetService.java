@@ -77,7 +77,7 @@ public class PasswordResetService {
             // Do not log the message, address or token.
             user.setResetTokenHash(null);
             user.setResetTokenExpiresAt(null);
-            org.slf4j.LoggerFactory.getLogger(getClass()).error("Password reset email delivery failed");
+            org.slf4j.LoggerFactory.getLogger(getClass()).error("Password reset email delivery failed; check mail provider credentials, verified sender and delivery logs ({})", error.getClass().getSimpleName());
         }
     }
 

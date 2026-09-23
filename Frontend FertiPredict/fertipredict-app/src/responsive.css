@@ -1,0 +1,96 @@
+/* Shared layout rules loaded after page styles. Tables scroll within their cards. */
+.main-content, .main-content > *, .field, .settings-field, .db-chart-card, .db-kpi-card { min-width: 0; }
+.sidebar { height: 100dvh; overflow-y: auto; }
+.sidebar-sections { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+.sidebar-menu-toggle { display: none; }
+.page-header { gap: 20px; flex-wrap: wrap; }
+.page-header-text { min-width: 0; }
+.page-header h1 { font-size: clamp(22px, 2.2vw, 30px); overflow-wrap: anywhere; }
+.predictions-table-card { max-width: 100%; overflow-x: auto; }
+.predictions-table { min-width: 740px; }
+.admin-table-wrap { max-width: 100%; }
+.admin-users table { min-width: 740px; }
+.field input, .field select, .settings-field input, .settings-field select { width: 100%; min-width: 0; max-width: 100%; }
+.fields-grid { grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); }
+.modal-detail-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.modal-detail-field, .modal-header-left { min-width: 0; overflow-wrap: anywhere; }
+.modal-meta, .modal-prob, .prediction-result-banner .result-top, .db-chart-legend { flex-wrap: wrap; }
+.modal-prob .prob-value { white-space: normal; }
+.modal-box { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.modal-body { min-height: 0; }
+.session-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.settings-tabs { overflow-x: auto; }
+.settings-tab { flex-shrink: 0; }
+.settings-toggle-row { gap: 16px; }
+.db-filters label { min-width: 0; }
+.db-filters input, .db-filters select { max-width: 100%; min-width: 0; }
+.db-chart-legend, .db-factor-legend { overflow-wrap: anywhere; }
+.db-factor-legend button { text-align: left; }
+.db-factor-legend button span { flex-shrink: 0; }
+.admin-users td { overflow-wrap: anywhere; }
+.login-screen { min-height: 100dvh; }
+.login-panel, .login-side { min-width: 0; }
+.login-header, .login-form, .login-mark, .recovery-status { overflow-wrap: anywhere; }
+.success-overlay { height: 100dvh; overflow-y: auto; padding: 16px; }
+.success-card { max-height: calc(100dvh - 32px); overflow-y: auto; }
+
+@media (min-width: 1600px) {
+  .predictions-page, .dashboard-page, .settings-page { width: 100%; max-width: 1600px; margin-inline: auto; }
+}
+@media (max-width: 1100px) {
+  .predictions-page, .dashboard-page, .settings-page, .new-prediction-page, .admin-users { padding: 24px; }
+  .settings-content, .settings-tabs { padding-inline: 0; }
+  .settings-actions { padding: 0 0 24px; }
+}
+@media (max-width: 800px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { position: relative; width: 100%; height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid var(--color-border); overflow: visible; }
+  .sidebar-brand { padding: 0; padding-right: 100px; min-height: 44px; }
+  .sidebar-menu-toggle { display: block; position: absolute; top: 16px; right: 16px; min-height: 44px; padding: 8px 14px; color: var(--color-ink); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer; }
+  .sidebar-sections { display: none; }
+  .sidebar-sections.is-open { display: flex; margin-top: 16px; }
+  .sidebar-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 8px 0; }
+  .sidebar-nav-item { min-height: 44px; white-space: normal; text-align: left; }
+  .sidebar-footer { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 0 0; }
+  .sidebar-footer > button { flex: 1; width: auto; min-height: 44px; margin: 0; }
+  .sidebar-welcome { margin-inline: 0; }
+  .main-content { margin-left: 0; width: 100%; min-height: 0; }
+  .btn-primary, .btn-outline, .btn-predict, .action-btn, .modal-close-btn { min-height: 44px; }
+  .action-btn, .modal-close-btn { min-width: 44px; }
+  .login-panel { padding: 36px 24px; }
+  .login-mark { margin-bottom: 32px; }
+}
+@media (max-width: 600px) {
+  .predictions-page, .dashboard-page, .settings-page, .new-prediction-page, .admin-users { padding: 20px 16px; }
+  .page-header { flex-direction: column; align-items: stretch; }
+  .predictions-toolbar, .predictions-table-heading, .form-actions, .settings-actions, .modal-delete-actions { flex-wrap: wrap; gap: 12px; }
+  .search-wrapper { width: 100%; min-width: 0; }
+  .predictions-table-heading .export-button { width: 100%; justify-content: center; }
+  .subsection, .section-card > .fields-grid, .settings-card-body, .settings-card-header, .section-header { padding: 16px; }
+  .fields-grid { grid-template-columns: minmax(0, 1fr); }
+  .field input, .field select, .settings-field input, .settings-field select, .login-form input, .db-filters input, .db-filters select, .admin-toolbar input, .admin-toolbar select { font-size: 16px; }
+  .db-kpi-grid, .db-charts-row { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .db-chart-card { padding: 16px; }
+  .db-filters label, .db-filters > button { flex: 1 1 100%; width: 100%; }
+  .settings-tabs { gap: 20px; }
+  .settings-actions > button, .form-actions > button { flex: 1 1 100%; justify-content: center; }
+  .action-row { flex-wrap: wrap; }
+  .action-row .btn-predict { width: 100%; justify-content: center; white-space: normal; }
+  .prediction-result-banner { padding: 16px; }
+  .shap-row { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 6px 10px; }
+  .shap-label { width: auto; grid-column: 1 / -1; white-space: normal; overflow-wrap: anywhere; }
+  .shap-bar-wrap { width: 100%; }
+  .modal-header, .modal-meta, .modal-prob, .modal-body { padding-left: 16px; padding-right: 16px; }
+  .modal-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .modal-header-left { flex-wrap: wrap; }
+  .admin-summary { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .admin-toolbar label, .admin-toolbar > button { width: 100%; }
+  .admin-confirm, .session-dialog { padding: 20px; }
+}
+@media (max-width: 380px) {
+  .sidebar-brand-sub { display: none; }
+  .sidebar-brand { gap: 8px; }
+  .sidebar-brand-icon { display: none; }
+  .sidebar-nav, .modal-detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .login-panel { padding: 24px 16px; }
+}
