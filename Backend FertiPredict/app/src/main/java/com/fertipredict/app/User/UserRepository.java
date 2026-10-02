@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long>{
+    @org.springframework.transaction.annotation.Transactional
+    @Modifying
+    @Query("update User u set u.lastLoginAt = :at where u.id = :id and (u.lastLoginAt is null or u.lastLoginAt < :at)")
+    int recordLogin(@Param("id") Long id, @Param("at") java.time.Instant at);
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u order by u.id")
     java.util.List<User> lockAccounts();

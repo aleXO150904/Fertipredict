@@ -47,6 +47,8 @@ public class User implements UserDetails{
     java.time.Instant resetRequestedAt;
     @com.fasterxml.jackson.annotation.JsonIgnore
     Long credentialsVersion;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    java.time.Instant lastLoginAt;
     @Enumerated(EnumType.STRING)
     Role role;
     @Builder.Default

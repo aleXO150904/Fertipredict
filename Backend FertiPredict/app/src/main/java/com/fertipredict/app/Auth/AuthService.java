@@ -25,9 +25,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        UserDetails user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
         if (!user.isEnabled()) throw new org.springframework.security.authentication.DisabledException("Cuenta desactivada");
         String token = jwtService.getToken(user);
+        userRepository.recordLogin(user.getId(), java.time.Instant.now());
         return AuthResponse.builder()
             .token(token)
             .build();

@@ -12,8 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class AdminUserService {
     private final UserRepository users;
     private final CurrentUser currentUser;
-    public record Account(Long id, String username, String names, String lastnames, Role role, boolean active) {
-        static Account from(User u) { return new Account(u.getId(), u.getUsername(), u.getNames(), u.getLastnames(), u.getRole(), u.isEnabled()); }
+    public record Account(Long id, String username, String names, String lastnames, Role role, boolean active, java.time.Instant lastLoginAt) {
+        static Account from(User u) { return new Account(u.getId(), u.getUsername(), u.getNames(), u.getLastnames(), u.getRole(), u.isEnabled(), u.getLastLoginAt()); }
     }
     public record Change(Role role, Boolean active) {}
     public record AccessChange(Boolean active) {}
