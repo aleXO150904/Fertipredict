@@ -3,12 +3,12 @@ import { api } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { LineChart, BarChart, PieChart, type Trend, type Factor } from "./InteractiveCharts";
 import "./Dashboard.css";
-type IconKey = "activity" | "people" | "target" | "trending";
+type IconKey = "activity" | "moderate" | "target" | "trending";
 function ActivityIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>;
 }
-function PeopleIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+function ModerateIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v6" /><path d="M12 17h.01" /></svg>;
 }
 function TargetIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>;
@@ -19,14 +19,14 @@ function TrendingIcon() {
 
 const ICONS: Record<IconKey, ReactNode> = {
   activity: <ActivityIcon />,
-  people:   <PeopleIcon />,
+  moderate: <ModerateIcon />,
   target:   <TargetIcon />,
   trending: <TrendingIcon />,
 };
 
 interface Metrics {
-  predictionsInPeriod: number; totalCouples: number; detectedCases: number; highRiskPercentage: number;
-  predictionsChange: number | null; couplesChange: number | null; detectedChange: number | null;
+  predictionsInPeriod: number; detectedCases: number; highRiskPercentage: number;
+  predictionsChange: number | null; detectedChange: number | null;
 }
 interface Risk { low: number; moderate: number; high: number }
 interface Range { start: string; end: string }
@@ -85,7 +85,14 @@ export default function DashboardPage() {
   const metrics = data?.metrics;
   const cards = metrics ? [
     { label: "Predicciones del periodo", value: metrics.predictionsInPeriod.toLocaleString("es-PE"), detail: changeLabel(metrics.predictionsChange), icon: "activity" as IconKey },
-    { label: "Parejas evaluadas", value: metrics.totalCouples.toLocaleString("es-PE"), detail: changeLabel(metrics.couplesChange), icon: "people" as IconKey },
+    {
+      label: "Predicciones de riesgo medio",
+      value: (data?.risk.moderate ?? 0).toLocaleString("es-PE"),
+      detail: metrics.predictionsInPeriod
+        ? `${((data?.risk.moderate ?? 0) / metrics.predictionsInPeriod * 100).toLocaleString("es-PE", { maximumFractionDigits: 1 })}% de las predicciones del periodo`
+        : "Sin predicciones en el periodo",
+      icon: "moderate" as IconKey,
+    },
     { label: "Predicciones de alto riesgo", value: metrics.detectedCases.toLocaleString("es-PE"), detail: changeLabel(metrics.detectedChange), icon: "trending" as IconKey },
     { label: "Proporción de alto riesgo", value: metrics.predictionsInPeriod ? `${metrics.highRiskPercentage.toLocaleString("es-PE")}%` : "—", detail: "Sobre las predicciones del periodo", icon: "target" as IconKey },
   ] : [];
