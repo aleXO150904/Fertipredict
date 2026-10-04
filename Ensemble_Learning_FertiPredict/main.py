@@ -1,5 +1,8 @@
+from pathlib import Path
+import os
+from model_runtime import ModelRuntime
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import joblib
 import numpy as np
@@ -10,10 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 #Para consumir la API
 app = FastAPI(title="FertiPredict ML API")
 
-@app.get("/ping", response_class=PlainTextResponse)
-def ping():
-    return "pong"
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],   # o ["null"] si abres el HTML como archivo local
@@ -23,21 +22,21 @@ app.add_middleware(
 
 @app.get("/")
 def serve_frontend():
-    return FileResponse("index.html")
+    return FileResponse(BASE_DIR / "index.html")
 
-# Cargar el modelo entrenado al iniciar la API
-model = joblib.load("model_ensemble.pkl")
+# Paths are resolved relative to this service, independent of the launch directory.
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / os.getenv("MODEL_PATH", "model_ensemble.pkl")
+BACKGROUND_PATH = BASE_DIR / os.getenv("BACKGROUND_PATH", "background_data.pkl")
+model = joblib.load(MODEL_PATH)
+background = (pd.read_json(BACKGROUND_PATH, orient="split")
+              if BACKGROUND_PATH.suffix == ".json" else joblib.load(BACKGROUND_PATH))
+runtime = ModelRuntime(model, background)
 
-# Pre-inicializar explainer de SHAP
-base_models = model.estimators_
-shap_explainer = shap.TreeExplainer(base_models[0])
-
-# Cargar el modelo de XAI
-background = joblib.load("background_data.pkl")
-if hasattr(background, 'iloc'):
-    background = background.iloc[:20]
-else:
-    background = background[:20]
+@app.get("/ping")
+def ping():
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse("pong")
 
 class PredictionInput(BaseModel):
     Edad_Masculino: int
@@ -101,60 +100,7 @@ def predict(data: PredictionInput):
         "Tipo_Alimentacion_Femenino": data.Tipo_Alimentacion_Femenino,
         "Historial_Familiar_Infertilidad_Femenino": data.Historial_Familiar_Infertilidad_Femenino
     }
-    input_data = pd.DataFrame([input_dict])
-    
-    # Asegurar que el orden de las columnas sea EXACTAMENTE el mismo con el que se entrenó el modelo
-    input_data = input_data[model.feature_names_in_]
-
-    prediction = model.predict(input_data.values)[0]
-    probabilities = model.predict_proba(input_data.values)[0]
-    
-    predicted_class = int(prediction)
-    risk_labels = {0: "LOW", 1: "MODERATE", 2: "HIGH"}
-    risk_level = risk_labels[int(prediction)]
-    probability = round(float(probabilities[2]) * 100, 2)
-
-    #SHAP Local
-    sv = shap_explainer.shap_values(input_data.values)
-
-    if isinstance(sv, list):
-        shap_for_class = sv[predicted_class][0]
-    elif len(sv.shape) == 3:
-        shap_for_class = sv[0, :, predicted_class]
-    else:
-        shap_for_class = sv[0]
-
-    feature_names = list(input_data.columns)
-    explanation = {
-        feature_names[i]: round(float(shap_for_class[i]), 4)
-        for i in range(len(feature_names))
-    }
-
-    #shap_arrays = []
-    #for m in base_models:
-    #    try:
-    #        exp = shap.TreeExplainer(m)
-    #        sv = exp.shap_values(input_data)
-    #        if isinstance(sv, list):
-    #            shap_arrays.append(sv[predicted_class][0])
-    #        else:
-    #            shap_arrays.append(sv[0])
-    #    except Exception as e:
-    #        print(f"SHAP falló para {m}: {e}")
-    #        continue
-    #
-    #shap_for_class = np.mean(shap_arrays, axis=0)
-    #feature_names = list(input_data.columns)
-    #explanation = {
-    #    feature_names[i]: round(float(shap_for_class[i]), 4)
-    #    for i in range(len(feature_names))
-    #}
-
-    return {
-        "riskLevel": risk_level,
-        "probability": probability,
-        "explanation": explanation
-    }
+    return runtime.predict(input_dict)
 
 @app.get("/health")
 def health_check():

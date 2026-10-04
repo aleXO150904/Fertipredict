@@ -7,3 +7,4 @@ catboost
 lightgbm
 joblib
 shap
+imbalanced-learn
