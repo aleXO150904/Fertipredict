@@ -15,6 +15,9 @@ public class AdminUserController {
     @PutMapping("/{id}/role") public AdminUserService.Account role(@PathVariable Long id, @RequestBody AdminUserService.RoleChange change) {
         return service.updateRole(id, change);
     }
+    @PutMapping("/{id}/profile") public AdminUserService.Account profile(@PathVariable Long id, @RequestBody AdminUserService.ProfileChange change) {
+        return service.updateProfile(id, change);
+    }
     @GetMapping public List<AdminUserService.Account> list() { return service.list(); }
     @PutMapping("/{id}") public AdminUserService.Account update(@PathVariable Long id, @RequestBody AdminUserService.Change change) {
         return service.update(id, change);
