@@ -19,6 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long>{
     @Query("select u from User u where u.id = :id")
     Optional<User> lockById(@Param("id") Long id);
     Optional<User> findByUsername(String username);
+    boolean existsByUsernameIgnoreCase(String username);
     boolean existsByUsernameIgnoreCaseAndIdNot(String username, Long id);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)

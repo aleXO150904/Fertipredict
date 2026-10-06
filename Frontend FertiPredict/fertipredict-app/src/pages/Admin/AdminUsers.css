@@ -37,3 +37,4 @@
 .admin-profile-confirm dt { font-weight: 700; margin-top: 16px; }
 .admin-profile-confirm dd { margin: 6px 0 0; overflow-wrap: anywhere; }
 .admin-profile-confirm dd span, .admin-profile-confirm dd strong { display: block; margin-top: 4px; }
+.admin-create-dialog { width: min(680px, calc(100vw - 32px)); }

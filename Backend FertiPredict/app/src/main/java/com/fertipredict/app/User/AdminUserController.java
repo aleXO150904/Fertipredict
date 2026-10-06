@@ -9,6 +9,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdminUserController {
     private final AdminUserService service;
+    private final AdminAccountCreationService creationService;
+    @PostMapping
+    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public AdminUserService.Account create(@RequestBody AdminAccountCreationService.Request request) {
+        return creationService.create(request);
+    }
     @PutMapping("/{id}/access") public AdminUserService.Account access(@PathVariable Long id, @RequestBody AdminUserService.AccessChange change) {
         return service.updateAccess(id, change);
     }

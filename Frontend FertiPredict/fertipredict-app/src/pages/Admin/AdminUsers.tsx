@@ -4,8 +4,9 @@ import axios from "axios";
 import { api } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import "./AdminUsers.css";
+import CreateUserDialog from "./CreateUserDialog";
 
-type Account = { id: number; names: string; lastnames: string; username: string; role: "ADMIN" | "USER"; active: boolean; lastLoginAt?: string | null };
+export type Account = { id: number; names: string; lastnames: string; username: string; role: "ADMIN" | "USER"; active: boolean; lastLoginAt?: string | null };
 function ProfileConfirmation({ original, next, saving, onCancel, onConfirm }: {
   original: Account; next: Account; saving: boolean; onCancel: () => void; onConfirm: () => void;
 }) {
@@ -37,6 +38,7 @@ export default function AdminUsers() {
     window.addEventListener("focus", tick);
     return () => { clearInterval(interval); window.removeEventListener("focus", tick); };
   }, []);
+  const [creating, setCreating] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("all");
@@ -105,6 +107,12 @@ export default function AdminUsers() {
   const rows = accounts.filter(a => (status === "all" || a.active === (status === "active")) && `${a.names} ${a.lastnames} ${a.username}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
   return <section className="admin-users">
     <header><span className="admin-eyebrow">ADMINISTRACIÓN</span><h1>Usuarios y permisos</h1><p>Gestiona los roles y el acceso a FertiPredict.</p></header>
+    <div className="admin-toolbar"><button className="btn-primary" disabled={loading || saving || !!pending || !!editing || creating} onClick={() => { setError(""); setMessage(""); setCreating(true); }}>Crear usuario</button></div>
+    {creating && <CreateUserDialog onCancel={() => setCreating(false)} onCreated={account => {
+      setAccounts(rows => [...rows.filter(row => row.id !== account.id), account]);
+      setSearch(""); setStatus("all"); setCreating(false);
+      setMessage(`Usuario ${account.username} creado como ${account.role === "ADMIN" ? "administrador" : "médico especialista"}. ${account.active ? "Puede iniciar sesión con la contraseña asignada." : "Su acceso está desactivado."}`);
+    }} />}
     <div className="admin-summary"><span><strong>{accounts.length}</strong> usuarios</span><span><strong>{accounts.filter(a => a.active).length}</strong> activos</span><span><strong>{accounts.filter(a => a.role === "ADMIN").length}</strong> administradores</span></div>
     <div className="admin-toolbar"><label>Buscar usuario<input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Nombre o correo electrónico" /></label><label>Estado de la cuenta<select value={status} onChange={e => setStatus(e.target.value)}><option value="all">Todos los usuarios</option><option value="active">Cuentas activas</option><option value="inactive">Cuentas inactivas</option></select></label><button className="btn-outline" onClick={() => void load()} disabled={loading || saving || (!!pending || !!editing)}>Actualizar lista</button></div>
     {error && <p role="alert" className="admin-error">{error}</p>}
