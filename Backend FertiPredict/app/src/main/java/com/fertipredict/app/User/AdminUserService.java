@@ -68,11 +68,29 @@ public class AdminUserService {
         requireAdmin();
         if (change.role() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El rol es obligatorio");
         User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!target.isEnabled())
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Activa la cuenta antes de cambiar su rol");
         return update(id, new Change(change.role(), target.isEnabled()));
+    }
+    @Transactional
+    public void delete(Long id) {
+        users.lockAccounts();
+        User actor = requireAdmin();
+        if (actor.getId().equals(id))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No puedes eliminar tu propia cuenta");
+        User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (users.hasPredictions(id))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario tiene predicciones registradas. Desactiva su cuenta para conservar el historial");
+        try {
+            users.delete(target);
+            users.flush();
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario tiene registros asociados. Desactiva su cuenta", ex);
+        }
     }
     private User requireAdmin() {
         User actor = currentUser.get();
-        if (actor.getRole() != Role.ADMIN) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (actor.getRole() != Role.ADMIN || !actor.isEnabled()) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return actor;
     }
     public List<Account> list() {
@@ -88,6 +106,8 @@ public class AdminUserService {
         if (actor.getId().equals(id) && (change.role() != Role.ADMIN || !change.active()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "No puedes quitarte el rol de administrador ni desactivar tu propia cuenta");
         User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!target.isEnabled() && target.getRole() != change.role())
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Activa la cuenta antes de cambiar su rol");
         if (target.isEnabled() != change.active()) {
             target.setCredentialsVersion((target.getCredentialsVersion() == null ? 0L : target.getCredentialsVersion()) + 1);
         }

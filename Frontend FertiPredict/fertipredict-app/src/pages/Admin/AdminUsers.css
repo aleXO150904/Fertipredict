@@ -72,3 +72,6 @@
   .admin-create-dialog .admin-toolbar { flex-direction: column; align-items: stretch; }
   .admin-create-dialog .admin-toolbar button { width: 100%; }
 }
+
+.admin-users .admin-delete-button { color: var(--color-error); border-color: var(--color-error); }
+.admin-profile-confirm .admin-error { color: var(--color-error); margin-top: 16px; }

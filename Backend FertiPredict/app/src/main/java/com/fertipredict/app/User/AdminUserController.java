@@ -24,6 +24,9 @@ public class AdminUserController {
     @PutMapping("/{id}/profile") public AdminUserService.Account profile(@PathVariable Long id, @RequestBody AdminUserService.ProfileChange change) {
         return service.updateProfile(id, change);
     }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) { service.delete(id); }
     @GetMapping public List<AdminUserService.Account> list() { return service.list(); }
     @PutMapping("/{id}") public AdminUserService.Account update(@PathVariable Long id, @RequestBody AdminUserService.Change change) {
         return service.update(id, change);

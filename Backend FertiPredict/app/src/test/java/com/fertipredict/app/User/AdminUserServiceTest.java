@@ -32,7 +32,8 @@ class AdminUserServiceTest {
         assertFalse(service.update(2L, new AdminUserService.Change(Role.USER, false)).active());
         assertFalse(target.isEnabled());
         assertFalse(jwt.isTokenValid(originalToken, target));
-        assertTrue(service.update(2L, new AdminUserService.Change(Role.ADMIN, true)).active());
+        assertTrue(service.update(2L, new AdminUserService.Change(Role.USER, true)).active());
+        service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN));
         assertEquals(Role.ADMIN, target.getRole());
         assertFalse(jwt.isTokenValid(originalToken, target));
     }
@@ -57,9 +58,13 @@ class AdminUserServiceTest {
         User target = User.builder().id(2L).role(Role.USER).active(false).build();
         when(users.lockById(2L)).thenReturn(Optional.of(target));
         when(users.save(target)).thenReturn(target);
-        var result = service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN));
-        assertFalse(result.active());
-        assertEquals(Role.ADMIN, result.role());
+        assertEquals(409, assertThrows(ResponseStatusException.class,
+            () -> service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN))).getStatusCode().value());
+        assertEquals(409, assertThrows(ResponseStatusException.class,
+            () -> service.update(2L, new AdminUserService.Change(Role.ADMIN, true))).getStatusCode().value());
+        assertFalse(target.isEnabled());
+        assertEquals(Role.USER, target.getRole());
+        verify(users, never()).save(any());
     }
     @Test void missingAccessStateIsRejected() {
         when(current.get()).thenReturn(admin);
