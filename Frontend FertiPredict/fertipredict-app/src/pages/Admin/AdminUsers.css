@@ -38,3 +38,37 @@
 .admin-profile-confirm dd { margin: 6px 0 0; overflow-wrap: anywhere; }
 .admin-profile-confirm dd span, .admin-profile-confirm dd strong { display: block; margin-top: 4px; }
 .admin-create-dialog { width: min(680px, calc(100vw - 32px)); }
+
+/* Restore dialog centering overridden by the global margin reset. */
+.admin-profile-confirm {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  background: var(--color-surface-solid);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-card);
+  color-scheme: inherit;
+}
+.admin-create-dialog { padding: clamp(20px, 4vw, 32px); }
+.admin-create-dialog h2 { margin-bottom: 16px; color: var(--color-ink); }
+.admin-create-dialog .admin-required-note { margin-bottom: 20px; color: var(--color-ink-soft); font-size: 13px; }
+.admin-create-dialog label { color: var(--color-ink); font-size: 14px; font-weight: 600; }
+.admin-create-dialog input, .admin-create-dialog select {
+  width: 100%; min-width: 0; min-height: 44px;
+  background: var(--color-bg); color: var(--color-ink);
+  border: 1px solid var(--color-border); font: inherit;
+}
+.admin-create-dialog option { background: var(--color-surface-solid); color: var(--color-ink); }
+.admin-create-dialog input:focus-visible, .admin-create-dialog select:focus-visible {
+  outline: 2px solid var(--color-primary-light); outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+.admin-create-dialog .admin-note { margin-top: 16px; }
+.admin-create-dialog .admin-error { color: var(--color-error); margin-top: 12px; }
+.admin-create-dialog .admin-toolbar { justify-content: flex-end; margin-bottom: 0; }
+.admin-create-dialog .btn-outline { background: var(--color-surface-solid); color: var(--color-ink); border-color: var(--color-border); }
+.admin-create-dialog .btn-outline:hover { border-color: var(--color-primary); color: var(--color-primary); }
+@media (max-width: 480px) {
+  .admin-create-dialog .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .admin-create-dialog .admin-toolbar button { width: 100%; }
+}

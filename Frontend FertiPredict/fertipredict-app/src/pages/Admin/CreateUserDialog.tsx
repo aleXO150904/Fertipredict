@@ -22,6 +22,7 @@ export default function CreateUserDialog({ onCancel, onCreated }: {
   useEffect(() => { if (reviewing) backButton.current?.focus(); }, [reviewing]);
   function review(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!event.currentTarget.reportValidity()) return;
     const next = { ...form, names: form.names.trim(), lastnames: form.lastnames.trim(), username: form.username.trim() };
     if (!next.names || !next.lastnames) { setError("Completa el nombre y el apellido."); return; }
     if (next.password !== next.confirmation) { setError("Las contraseñas no coinciden."); return; }
@@ -62,14 +63,15 @@ export default function CreateUserDialog({ onCancel, onCreated }: {
       <div className="admin-toolbar"><button ref={backButton} type="button" className="btn-outline" disabled={saving} onClick={back}>Volver a editar</button>
         <button type="button" className="btn-primary" disabled={saving} onClick={() => void create()}>{saving ? "Creando…" : "Sí, crear usuario"}</button></div>
     </> : <form onSubmit={review}>
+      <p className="admin-required-note">Todos los campos son obligatorios (*).</p>
       <div className="admin-profile-fields">
-        <label>Nombre<input autoFocus required maxLength={255} autoComplete="off" value={form.names} onChange={e => setForm({ ...form, names: e.target.value })} /></label>
-        <label>Apellido<input required maxLength={255} autoComplete="off" value={form.lastnames} onChange={e => setForm({ ...form, lastnames: e.target.value })} /></label>
-        <label>Correo electrónico<input required type="email" maxLength={254} autoComplete="off" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} /></label>
-        <label>Rol<select value={form.role} onChange={e => setForm({ ...form, role: e.target.value as Account["role"] })}><option value="USER">Médico especialista</option><option value="ADMIN">Administrador</option></select></label>
-        <label>Contraseña<input required type="password" minLength={12} maxLength={72} autoComplete="new-password" aria-describedby="create-password-help" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></label>
-        <label>Confirmar contraseña<input required type="password" minLength={12} maxLength={72} autoComplete="new-password" value={form.confirmation} onChange={e => setForm({ ...form, confirmation: e.target.value })} /></label>
-        <label>Estado inicial<select value={form.active ? "active" : "inactive"} onChange={e => setForm({ ...form, active: e.target.value === "active" })}><option value="active">Activo</option><option value="inactive">Inactivo</option></select></label>
+        <label>Nombre *<input autoFocus required maxLength={255} autoComplete="off" value={form.names} onChange={e => setForm({ ...form, names: e.target.value })} /></label>
+        <label>Apellido *<input required maxLength={255} autoComplete="off" value={form.lastnames} onChange={e => setForm({ ...form, lastnames: e.target.value })} /></label>
+        <label>Correo electrónico *<input required type="email" maxLength={254} autoComplete="off" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} /></label>
+        <label>Rol *<select required value={form.role} onChange={e => setForm({ ...form, role: e.target.value as Account["role"] })}><option value="USER">Médico especialista</option><option value="ADMIN">Administrador</option></select></label>
+        <label>Contraseña *<input required type="password" minLength={12} maxLength={72} autoComplete="new-password" aria-describedby="create-password-help" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></label>
+        <label>Confirmar contraseña *<input required type="password" minLength={12} maxLength={72} autoComplete="new-password" value={form.confirmation} onChange={e => setForm({ ...form, confirmation: e.target.value })} /></label>
+        <label>Estado inicial *<select required value={form.active ? "active" : "inactive"} onChange={e => setForm({ ...form, active: e.target.value === "active" })}><option value="active">Activo</option><option value="inactive">Inactivo</option></select></label>
       </div>
       <p id="create-password-help" className="admin-note">Contraseña de al menos 12 caracteres (máximo 72 bytes; las tildes y otros símbolos pueden ocupar más de uno).</p>
       {error && <p role="alert" className="admin-error">{error}</p>}
