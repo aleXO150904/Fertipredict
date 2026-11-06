@@ -453,7 +453,7 @@ export default function PredictionsPage({
       <div className="predictions-table-heading">
         {!loading && !error && <div className="predictions-summary">
           <span className="summary-count">
-            <strong>{filtered.length}</strong> de {predictions.length} predicción{predictions.length !== 1 ? "es" : ""}
+            <strong>{filtered.length}</strong> de {predictions.length} {predictions.length === 1 ? "predicción" : "predicciones"}
           </span>
         </div>}
         <button className="btn-outline export-button" type="button" onClick={() => exportPredictionsToExcel(filtered)} disabled={loading || !!error || filtered.length === 0} title="Exportar las predicciones visibles a Excel">
