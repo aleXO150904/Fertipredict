@@ -1,3 +1,4 @@
+import { formatPredictionDate } from "../utils/predictionDate";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { PatientDTO, PredictionDTO } from "../types/prediction";
@@ -22,7 +23,7 @@ export function createPredictionPdf(pred: PredictionDTO, featureLabels: Record<s
   doc.setFont("helvetica", "normal"); doc.setFontSize(10);
   doc.text(`Reporte de predicción | ${id}`, 16, 24);
   doc.setFontSize(8);
-  doc.text(`Exportado: ${new Date().toLocaleString("es-PE")}`, 194, 24, { align: "right" });
+  doc.text(`Exportado: ${formatPredictionDate(new Date().toISOString())}`, 194, 24, { align: "right" });
   let y = 40;
   function section(title: string, rows: Row[]) {
     if (y > 245) { doc.addPage(); y = 20; }
@@ -37,11 +38,11 @@ export function createPredictionPdf(pred: PredictionDTO, featureLabels: Record<s
       didDrawPage: data => { y = (data.cursor?.y ?? 20) + 9; },
     });
   }
-  const date = new Date(pred.date);
   const risk: Record<string, string> = { HIGH: "Alto", MODERATE: "Medio", MEDIUM: "Medio", LOW: "Bajo", PENDING: "Pendiente" };
   section("Resultado", [
     ["ID de predicción", id], ["ID de pareja", text(pred.couple?.id)],
-    ["Fecha de predicción", Number.isNaN(date.getTime()) ? "No registrada" : date.toLocaleString("es-PE")],
+    [pred.createdAt ? "Fecha de creación" : "Fecha histórica registrada", formatPredictionDate(pred.date)],
+    ["Última actualización", pred.updatedAt ? formatPredictionDate(pred.updatedAt) : "Sin actualización registrada"],
     ["Nivel de riesgo", risk[pred.riskLevel?.toUpperCase()] ?? text(pred.riskLevel)],
     ["Probabilidad de alto riesgo", predictionProbability(pred.probability)],
   ]);

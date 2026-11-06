@@ -20,6 +20,9 @@ public class PredictionDTO {
     String riskLevel;
     Float probability;
     Map<String, Double> explanation;
-    LocalDateTime date;
+    String date;
+    java.time.Instant createdAt;
+    java.time.Instant updatedAt;
+    String dateTimeZone;
     CoupleDTO couple;
 }

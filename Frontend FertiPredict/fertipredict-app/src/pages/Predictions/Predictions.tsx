@@ -5,15 +5,9 @@ import type { ReactElement } from "react";
 import { predictionService } from "../../services/predictionService";
 import type { PredictionDTO } from "../../types/prediction";
 import "./Predictions.css";
+import { formatPredictionDate } from "../../utils/predictionDate";
 
 /* ── helpers ─────────────────────────────────────────────── */
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-PE", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 function getProbabilityClass(riskLevel: string): string {
   switch (riskLevel?.toUpperCase()) {
@@ -44,9 +38,9 @@ function getCoupleId(pred: PredictionDTO): string {
 }
 
 function exportPredictionsToExcel(rows: PredictionDTO[]) {
-  const header = ["ID", "Pareja / Pacientes", "ID de pareja", "Fecha", "Nivel de riesgo", "Probabilidad de riesgo alto (%)"];
+  const header = ["ID", "Pareja / Pacientes", "ID de pareja", "Fecha registrada", "Creación UTC", "Última actualización (Lima)", "Nivel de riesgo", "Probabilidad de riesgo alto (%)"];
   const esc = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
-  const body = rows.map(pred => [formatId(pred.id), getCoupleName(pred), getCoupleId(pred), formatDate(pred.date), pred.riskLevel || "—", formatProbability(pred.probability)]);
+  const body = rows.map(pred => [formatId(pred.id), getCoupleName(pred), getCoupleId(pred), formatPredictionDate(pred.date), pred.createdAt || "Zona horaria no registrada", pred.updatedAt ? formatPredictionDate(pred.updatedAt) : "Sin actualización registrada", pred.riskLevel || "—", formatProbability(pred.probability)]);
   const table = [header, ...body].map((row, index) => `<tr>${row.map(value => `<${index ? "td" : "th"}>${esc(String(value))}</${index ? "td" : "th"}>`).join("")}</tr>`).join("");
   const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:7px}th{background:#4f46e5;color:#fff}</style></head><body><table>${table}</table></body></html>`;
   const url = URL.createObjectURL(new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" }));
@@ -198,7 +192,8 @@ function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void
         <div className="modal-meta">
           <span>{getCoupleId(pred)}</span>
           <span>·</span>
-          <span>{formatDate(pred.date)}</span>
+          <span>{pred.createdAt ? "Creación: " : "Fecha histórica: "}{formatPredictionDate(pred.date)}</span>
+          {pred.updatedAt && <span>Última actualización: {formatPredictionDate(pred.updatedAt)}</span>}
         </div>
 
         <div className="modal-prob">
@@ -524,7 +519,7 @@ export default function PredictionsPage({
                     </td>
                     {user?.role === "ADMIN" && <td>{pred.createdBy || "No registrado"}</td>}
                     <td>
-                      <span className="date-cell">{formatDate(pred.date)}</span>
+                      <span className="date-cell">{formatPredictionDate(pred.date)}</span>
                     </td>
                     <td>
                       <RiskBadge level={pred.riskLevel} />

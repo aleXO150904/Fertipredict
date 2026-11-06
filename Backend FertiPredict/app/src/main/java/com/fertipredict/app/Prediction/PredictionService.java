@@ -113,7 +113,6 @@ public class PredictionService {
             .riskLevel(mlResponse.getRiskLevel())
             .probability(mlResponse.getProbability())
             .explanation(explanationJson)
-            .date(LocalDateTime.now())
             .couple(couple)
             .user(user)
             .build();
@@ -180,7 +179,7 @@ public class PredictionService {
         existing.setRiskLevel(mlResponse.getRiskLevel());
         existing.setProbability(mlResponse.getProbability());
         existing.setExplanation(explanationJson);
-        existing.setDate(java.time.LocalDateTime.now());
+        existing.recordUpdate(java.time.Instant.now());
 
         // Actualizar factores de la pareja existente
         Couple couple = existing.getCouple();
@@ -278,7 +277,10 @@ public class PredictionService {
             .riskLevel(prediction.getRiskLevel())
             .probability(prediction.getProbability())
             .explanation(explanationMap)
-            .date(prediction.getDate())
+            .date(prediction.displayDate())
+            .createdAt(prediction.getCreatedAt())
+            .updatedAt(prediction.getUpdatedAt())
+            .dateTimeZone(prediction.getCreatedAt() == null ? null : "America/Lima")
             .couple(coupleDTO)
             .build();
     }

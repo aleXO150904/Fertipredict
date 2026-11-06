@@ -9,12 +9,12 @@ public record DateRange(LocalDate start, LocalDate end) {
     public DateRange {
         if (start == null || end == null || start.isAfter(end)
                 || ChronoUnit.DAYS.between(start, end) > 3660
-                || end.isAfter(LocalDate.now())) {
+                || end.isAfter(LocalDate.now(java.time.ZoneId.of("America/Lima")))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecciona un intervalo válido de hasta diez años, sin fechas futuras.");
         }
     }
     public static DateRange of(LocalDate start, LocalDate end) {
-        LocalDate last = end == null ? LocalDate.now() : end;
+        LocalDate last = end == null ? LocalDate.now(java.time.ZoneId.of("America/Lima")) : end;
         return new DateRange(start == null ? last.minusMonths(5).withDayOfMonth(1) : start, last);
     }
     public DateRange previous() {

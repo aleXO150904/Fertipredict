@@ -50,5 +50,8 @@ export interface PredictionDTO {
   riskLevel: string;
   probability: number;
   date: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  dateTimeZone?: string | null;
   couple: CoupleDTO | null;
 }

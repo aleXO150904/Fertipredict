@@ -22,8 +22,38 @@ public class Prediction {
     @Column(nullable = false, length = 100)
     private String riskLevel;
 
-    @Column(nullable = false)
+    // Legacy wall-clock value. New rows mirror the authoritative instant in Lima.
+    // Existing rows are not assigned an assumed timezone.
+    @Column(nullable = false, updatable = false)
     private LocalDateTime date;
+
+    @Column(name = "created_at", updatable = false, columnDefinition = "timestamp with time zone")
+    private java.time.Instant createdAt;
+
+    @Column(name = "updated_at", columnDefinition = "timestamp with time zone")
+    private java.time.Instant updatedAt;
+
+    public static final java.time.ZoneId DISPLAY_ZONE = java.time.ZoneId.of("America/Lima");
+
+    @PrePersist
+    void initializeCreationTime() {
+        if (createdAt == null) recordCreation(java.time.Instant.now());
+    }
+
+    public void recordCreation(java.time.Instant instant) {
+        if (createdAt != null) throw new IllegalStateException("Creation time already recorded");
+        createdAt = java.util.Objects.requireNonNull(instant);
+        date = LocalDateTime.ofInstant(instant, DISPLAY_ZONE);
+    }
+
+    public void recordUpdate(java.time.Instant instant) {
+        updatedAt = java.util.Objects.requireNonNull(instant);
+    }
+
+    public String displayDate() {
+        return createdAt == null ? (date == null ? null : date.toString())
+            : createdAt.atZone(DISPLAY_ZONE).toOffsetDateTime().toString();
+    }
 
     @Column(nullable = false)
     private Float probability;
