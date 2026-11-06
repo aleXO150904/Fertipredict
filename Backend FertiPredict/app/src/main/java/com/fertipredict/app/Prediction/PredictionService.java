@@ -117,7 +117,9 @@ public class PredictionService {
             .user(user)
             .build();
 
-        predictionRepository.save(prediction);
+        // Set both timestamps before persistence, including repository adapters/tests.
+        prediction.recordCreation(java.time.Instant.now());
+        predictionRepository.saveAndFlush(prediction);
 
         return toDTO(prediction, malePatient, femalePatient);
     }

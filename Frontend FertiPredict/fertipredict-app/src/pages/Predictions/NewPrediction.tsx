@@ -1,3 +1,4 @@
+import axios from "axios";
 import { formatProbability } from "../../utils/probability";
 import { useState, type FormEvent } from "react";
 import { predictionService } from "../../services/predictionService";
@@ -143,14 +144,16 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
       setResult({ riskLevel: res.riskLevel, probability: res.probability, explanation: res.explanation });
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    } catch (err: any) {
-      setError(
-        isEditing
-          ? "Error al actualizar predicción: Verifica tu conexión al modelo ML y backend."
-          : "Error al registrar predicción: Verifica tu conexión al modelo ML y backend."
-      );
-      console.error(err);
-    } finally {
+    } catch (err: unknown) {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+      const serverMessage = axios.isAxiosError(err) ? err.response?.data?.message : undefined;
+      setError(status === 401
+        ? "No se pudo autorizar la solicitud. Si tu sesión sigue activa, conserva los datos y vuelve a intentarlo."
+        : typeof serverMessage === "string" && serverMessage.startsWith("No se pudo guardar la predicción")
+          ? serverMessage
+          : status === 502 || status === 503 || status === 504
+            ? "El servicio predictivo no está disponible. Tus datos siguen en el formulario; inténtalo nuevamente."
+            : "No se pudo confirmar el guardado. Tus datos siguen en el formulario. Revisa la lista de predicciones antes de reintentar para evitar duplicados.");    } finally {
       setLoading(false);
     }
   }

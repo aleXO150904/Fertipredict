@@ -19,9 +19,28 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-api.interceptors.response.use(response => response, error => {
-  if (error.response?.status === 401 && !error.config?.url?.startsWith("/auth/")) {
-    window.dispatchEvent(new Event("fertipredict:unauthorized"));
+// Confirm the session independently: an upstream/internal 401 must not erase it.
+const checks = new Map<string, Promise<boolean>>();
+function sessionIsInvalid(token: string): Promise<boolean> {
+  const pending = checks.get(token);
+  if (pending) return pending;
+  const check = axios.get(`${API_BASE_URL.replace(/\/$/, "")}/api/v1/user/me`, {
+    headers: { Authorization: `Bearer ${token}` }, timeout: 15000,
+  }).then(() => false).catch(error => axios.isAxiosError(error) && error.response?.status === 401)
+    .finally(() => checks.delete(token));
+  checks.set(token, check);
+  return check;
+}
+api.interceptors.response.use(response => response, async error => {
+  const token = localStorage.getItem("token");
+  const authorization = error.config?.headers?.Authorization;
+  if (error.response?.status === 401 && !error.config?.url?.startsWith("/auth/")
+      && token && authorization === `Bearer ${token}`) {
+    const invalid = await sessionIsInvalid(token);
+    if (invalid && localStorage.getItem("token") === token) {
+      window.dispatchEvent(new Event("fertipredict:unauthorized"));
+    }
   }
+  // Never retry a mutation automatically: it may already have reached the server.
   return Promise.reject(error);
 });

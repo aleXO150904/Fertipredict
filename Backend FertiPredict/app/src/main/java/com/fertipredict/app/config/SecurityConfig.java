@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .disable())
             .authorizeHttpRequests(authRequest ->
               authRequest
+                .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                 .requestMatchers(HttpMethod.GET, "/ping").permitAll()
                 .requestMatchers("/api/test", "/actuator/health").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
