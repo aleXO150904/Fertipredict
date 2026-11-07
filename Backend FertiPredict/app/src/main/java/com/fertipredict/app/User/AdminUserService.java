@@ -108,6 +108,13 @@ public class AdminUserService {
         User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!target.isEnabled() && target.getRole() != change.role())
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Activa la cuenta antes de cambiar su rol");
+        if (target.getRole() != change.role()) {
+            requiredText(target.getNames());
+            requiredText(target.getLastnames());
+            String email = requiredText(target.getUsername());
+            if (email.length() > 254 || !email.matches("^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$"))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Completa y guarda un correo válido antes de cambiar el rol");
+        }
         if (target.isEnabled() != change.active()) {
             target.setCredentialsVersion((target.getCredentialsVersion() == null ? 0L : target.getCredentialsVersion()) + 1);
         }

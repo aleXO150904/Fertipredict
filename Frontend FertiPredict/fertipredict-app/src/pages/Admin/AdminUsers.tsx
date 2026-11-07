@@ -76,7 +76,7 @@ export default function AdminUsers() {
     } catch (err) {
       setError(axios.isAxiosError(err) && err.response?.status === 409
         ? (pendingKind === "role" ? "No se puede cambiar el rol: activa la cuenta primero y comprueba que no sea tu propia cuenta. Actualiza la lista si el estado cambió." : "No puedes desactivar tu propia cuenta.")
-        : "No se pudo guardar el cambio. Comprueba tu conexión y tus permisos.");
+        : axios.isAxiosError(err) && err.response?.status === 400 && pendingKind === "role" ? "Completa y guarda nombre, apellido y un correo válido antes de cambiar el rol." : "No se pudo guardar el cambio. Comprueba tu conexión y tus permisos.");
     } finally { setSaving(false); }
   }
   function reviewProfile(event: React.FormEvent<HTMLFormElement>) {
@@ -111,6 +111,9 @@ export default function AdminUsers() {
         : "No se pudieron guardar los datos. Inténtalo de nuevo.");
     } finally { profileInFlight.current = false; setSaving(false); setConfirmation(null); }
   }
+  const editingProfileComplete = !!editing && !!editing.names.trim() && !!editing.lastnames.trim()
+    && editing.names.trim().length <= 255 && editing.lastnames.trim().length <= 255
+    && editing.username.trim().length <= 254 && /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(editing.username.trim());
   const rows = accounts.filter(a => (status === "all" || a.active === (status === "active")) && `${a.names} ${a.lastnames} ${a.username}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
   return <section className="admin-users">
     <header><span className="admin-eyebrow">ADMINISTRACIÓN</span><h1>Usuarios y permisos</h1><p>Gestiona los roles y el acceso a FertiPredict.</p></header>
@@ -139,14 +142,14 @@ export default function AdminUsers() {
       <p>{accounts.find(a => a.id === editing.id)?.username}</p>
       <div className="admin-role-editor">
         <label>Rol del usuario<select aria-describedby="admin-role-help" value={editing.role}
-          disabled={!editing.active || editing.id === user?.id || saving || !!pending || !!confirmation
+          disabled={!editingProfileComplete || !editing.active || editing.id === user?.id || saving || !!pending || !!confirmation
             || editing.names !== (accounts.find(a => a.id === editing.id)?.names || "")
             || editing.lastnames !== (accounts.find(a => a.id === editing.id)?.lastnames || "")
             || editing.username !== accounts.find(a => a.id === editing.id)?.username}
-          onChange={e => { setError(""); setPendingKind("role"); setPending({ ...editing, role: e.target.value as Account["role"] }); }}>
+          onChange={e => { if (!editingProfileComplete) return; setError(""); setPendingKind("role"); setPending({ ...editing, role: e.target.value as Account["role"] }); }}>
           <option value="USER">Médico especialista</option><option value="ADMIN">Administrador</option>
         </select></label>
-        <p id="admin-role-help" className="admin-note">{!editing.active ? "Activa la cuenta para cambiar su rol." : "El cambio de rol se confirma por separado. Si modificas los datos personales, guárdalos antes de cambiar el rol."}</p>
+        <p id="admin-role-help" className="admin-note">{!editing.active ? "Activa la cuenta para cambiar su rol." : !editingProfileComplete ? "Completa nombre, apellido y un correo válido para habilitar el cambio de rol." : "Todos los datos personales son obligatorios. Guarda cualquier edición antes de cambiar el rol; luego se solicitará confirmación."}</p>
       </div>
       {editing.role === "USER" ? <form onSubmit={reviewProfile}>
         <div className="admin-profile-fields">

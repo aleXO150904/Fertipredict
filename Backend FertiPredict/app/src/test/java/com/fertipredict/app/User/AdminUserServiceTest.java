@@ -24,7 +24,7 @@ class AdminUserServiceTest {
     }
     @Test void deactivationRevokesOldTokensEvenAfterReactivation() {
         when(current.get()).thenReturn(admin);
-        User target = User.builder().id(2L).role(Role.USER).username("test@example.com").build();
+        User target = User.builder().id(2L).role(Role.USER).username("test@example.com").names("Ana").lastnames("Pérez").build();
         when(users.lockById(2L)).thenReturn(Optional.of(target));
         when(users.save(target)).thenReturn(target);
         var jwt = new com.fertipredict.app.Jwt.JwtService();
@@ -71,5 +71,21 @@ class AdminUserServiceTest {
         assertEquals(400, assertThrows(ResponseStatusException.class,
             () -> service.updateAccess(2L, new AdminUserService.AccessChange(null))).getStatusCode().value());
         verify(users, never()).save(any());
+    }
+    @Test void incompleteProfileCannotChangeRoleThroughEitherEndpoint() {
+        when(current.get()).thenReturn(admin);
+        User target = User.builder().id(2L).role(Role.USER).username("test@example.com").names(" ").lastnames("Pérez").build();
+        when(users.lockById(2L)).thenReturn(Optional.of(target));
+        assertEquals(400, assertThrows(ResponseStatusException.class,
+            () -> service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN))).getStatusCode().value());
+        target.setNames("Ana"); target.setLastnames(null);
+        assertEquals(400, assertThrows(ResponseStatusException.class,
+            () -> service.update(2L, new AdminUserService.Change(Role.ADMIN, true))).getStatusCode().value());
+        target.setLastnames("Pérez"); target.setUsername("invalid");
+        assertEquals(400, assertThrows(ResponseStatusException.class,
+            () -> service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN))).getStatusCode().value());
+        verify(users, never()).save(any());
+        target.setUsername("test@example.com"); when(users.save(target)).thenReturn(target);
+        assertEquals(Role.ADMIN, service.updateRole(2L, new AdminUserService.RoleChange(Role.ADMIN)).role());
     }
 }
