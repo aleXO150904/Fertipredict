@@ -15,15 +15,22 @@ public class AdminUserService {
     public record Account(Long id, String username, String names, String lastnames, Role role, boolean active, java.time.Instant lastLoginAt) {
         static Account from(User u) { return new Account(u.getId(), u.getUsername(), u.getNames(), u.getLastnames(), u.getRole(), u.isEnabled(), u.getLastLoginAt()); }
     }
-    public record ProfileChange(String names, String lastnames, String username) {}
+    public record ProfileChange(String names, String lastnames, String username, Role role) {
+        public ProfileChange(String names, String lastnames, String username) { this(names, lastnames, username, null); }
+    }
     @Transactional
     public Account updateProfile(Long id, ProfileChange change) {
-        requireAdmin();
         users.lockAccounts();
+        User actor = requireAdmin();
         User target = users.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (target.getRole() != Role.USER)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo se pueden editar los datos de médicos especialistas");
         if (change == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (actor.getId().equals(id))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usa la configuración de tu perfil para editar tu propia cuenta");
+        if (target.getRole() != Role.USER && change.role() == null)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo se pueden editar los datos de médicos especialistas");
+        Role nextRole = change.role() == null ? target.getRole() : change.role();
+        if (nextRole != target.getRole() && !target.isEnabled())
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Activa la cuenta antes de cambiar su rol");
         String names = requiredText(change.names());
         String lastnames = requiredText(change.lastnames());
         String email = requiredText(change.username());
@@ -40,6 +47,7 @@ public class AdminUserService {
         target.setNames(names);
         target.setLastnames(lastnames);
         target.setUsername(email);
+        target.setRole(nextRole);
         try {
             return Account.from(users.saveAndFlush(target));
         } catch (org.springframework.dao.DataIntegrityViolationException ex) {

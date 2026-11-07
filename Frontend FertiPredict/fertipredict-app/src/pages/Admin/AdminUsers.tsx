@@ -25,6 +25,7 @@ function ProfileConfirmation({ original, next, saving, onCancel, onConfirm }: {
     <dl>{fields.filter(field => original[field.key] !== next[field.key]).map(field => <div key={field.key}>
       <dt>{field.label}</dt><dd><span>Actual: {original[field.key] || "Sin registro"}</span><strong>Nuevo: {next[field.key]}</strong></dd>
     </div>)}</dl>
+    {original.role !== next.role && <dl><dt>Rol</dt><dd><span>Actual: {original.role === "ADMIN" ? "Administrador" : "Médico especialista"}</span><strong>Nuevo: {next.role === "ADMIN" ? "Administrador" : "Médico especialista"}</strong></dd></dl>}
     {original.username !== next.username && <p>El médico deberá volver a iniciar sesión con el nuevo correo y su contraseña actual. Los enlaces anteriores de recuperación quedarán invalidados.</p>}
     <div className="admin-toolbar"><button autoFocus type="button" className="btn-outline" disabled={saving} onClick={onCancel}>Volver a editar</button>
       <button type="button" className="btn-primary" disabled={saving} onClick={onConfirm}>{saving ? "Guardando…" : "Sí, guardar cambios"}</button></div>
@@ -83,10 +84,10 @@ export default function AdminUsers() {
     event.preventDefault();
     if (!editing || saving) return;
     const next = { ...editing, names: editing.names.trim(), lastnames: editing.lastnames.trim(), username: editing.username.trim() };
-    if (!next.names || !next.lastnames) { setProfileError("Completa el nombre y el apellido."); return; }
+    if (!editingProfileComplete || !next.names || !next.lastnames) { setProfileError("Completa el nombre, apellido y un correo válido."); return; }
     const original = accounts.find(a => a.id === next.id);
     if (!original) return;
-    if (original.names === next.names && original.lastnames === next.lastnames && original.username === next.username) {
+    if (original.names === next.names && original.lastnames === next.lastnames && original.username === next.username && original.role === next.role) {
       setProfileError("No hay cambios para guardar."); return;
     }
     setProfileError(""); setConfirmation(next);
@@ -94,19 +95,19 @@ export default function AdminUsers() {
   async function saveProfile() {
     if (!confirmation || profileInFlight.current) return;
     profileInFlight.current = true;
-    const profile = { names: confirmation.names, lastnames: confirmation.lastnames, username: confirmation.username };
+    const profile = { names: confirmation.names, lastnames: confirmation.lastnames, username: confirmation.username, role: confirmation.role };
     setSaving(true); setProfileError(""); setMessage("");
     try {
       const { data } = await api.put<Account>(`/api/admin/users/${confirmation.id}/profile`, profile);
       const emailChanged = accounts.find(a => a.id === data.id)?.username !== data.username;
       setAccounts(rows => rows.map(row => row.id === data.id ? data : row));
       setEditing(null);
-      setMessage(emailChanged ? "Datos actualizados. El médico deberá iniciar sesión con el nuevo correo y su contraseña actual." : "Datos del médico actualizados correctamente.");
+      setMessage(emailChanged ? "Datos actualizados. El médico deberá iniciar sesión con el nuevo correo y su contraseña actual." : "Datos y rol guardados correctamente.");
     } catch (err) {
       const code = axios.isAxiosError(err) ? err.response?.status : undefined;
-      setProfileError(code === 409 ? "El correo ya está registrado en otra cuenta. Usa uno diferente."
+      setProfileError(code === 409 ? "No se pudo guardar: el correo puede estar en uso o la cuenta se desactivó antes del cambio de rol. Revisa los datos y actualiza la lista."
         : code === 400 ? "Revisa el nombre, apellido y correo ingresados."
-        : code === 403 ? "Solo un administrador puede editar cuentas con rol de médico. Actualiza la lista."
+        : code === 403 ? "Solo un administrador puede editar otras cuentas. No puedes modificar tu propia cuenta desde aquí."
         : code === 404 ? "El usuario ya no está disponible. Actualiza la lista."
         : "No se pudieron guardar los datos. Inténtalo de nuevo.");
     } finally { profileInFlight.current = false; setSaving(false); setConfirmation(null); }
@@ -142,25 +143,22 @@ export default function AdminUsers() {
       <p>{accounts.find(a => a.id === editing.id)?.username}</p>
       <div className="admin-role-editor">
         <label>Rol del usuario<select aria-describedby="admin-role-help" value={editing.role}
-          disabled={!editingProfileComplete || !editing.active || editing.id === user?.id || saving || !!pending || !!confirmation
-            || editing.names !== (accounts.find(a => a.id === editing.id)?.names || "")
-            || editing.lastnames !== (accounts.find(a => a.id === editing.id)?.lastnames || "")
-            || editing.username !== accounts.find(a => a.id === editing.id)?.username}
-          onChange={e => { if (!editingProfileComplete) return; setError(""); setPendingKind("role"); setPending({ ...editing, role: e.target.value as Account["role"] }); }}>
+          disabled={!editingProfileComplete || !editing.active || editing.id === user?.id || saving || !!confirmation}
+          onChange={e => setEditing({ ...editing, role: e.target.value as Account["role"] })}>
           <option value="USER">Médico especialista</option><option value="ADMIN">Administrador</option>
         </select></label>
-        <p id="admin-role-help" className="admin-note">{!editing.active ? "Activa la cuenta para cambiar su rol." : !editingProfileComplete ? "Completa nombre, apellido y un correo válido para habilitar el cambio de rol." : "Todos los datos personales son obligatorios. Guarda cualquier edición antes de cambiar el rol; luego se solicitará confirmación."}</p>
+        <p id="admin-role-help" className="admin-note">{!editing.active ? "Activa la cuenta para cambiar su rol." : !editingProfileComplete ? "Completa nombre, apellido y un correo válido para habilitar el cambio de rol." : "Los cambios de datos y rol se aplicarán juntos al pulsar Guardar datos y confirmar."}</p>
       </div>
-      {editing.role === "USER" ? <form onSubmit={reviewProfile}>
+      <form onSubmit={reviewProfile}>
         <div className="admin-profile-fields">
           <label>Nombre<input autoFocus required maxLength={255} autoComplete="given-name" value={editing.names} disabled={saving} onChange={e => setEditing({ ...editing, names: e.target.value })} /></label>
           <label>Apellido<input required maxLength={255} autoComplete="family-name" value={editing.lastnames} disabled={saving} onChange={e => setEditing({ ...editing, lastnames: e.target.value })} /></label>
           <label>Correo electrónico<input required type="email" maxLength={254} autoComplete="off" value={editing.username} disabled={saving} onChange={e => setEditing({ ...editing, username: e.target.value })} /></label>
         </div>
-        <p className="admin-note">Si cambias el correo, el médico deberá volver a iniciar sesión con el nuevo correo y su contraseña actual. Los enlaces anteriores de recuperación quedarán invalidados.</p>
+        <p className="admin-note">Si cambias el correo, el usuario deberá volver a iniciar sesión con el nuevo correo y su contraseña actual. Los enlaces anteriores de recuperación quedarán invalidados.</p>
         {profileError && <p className="admin-error" role="alert">{profileError}</p>}
         <div className="admin-toolbar"><button type="button" className="btn-outline" disabled={saving} onClick={() => setEditing(null)}>Cancelar</button><button type="submit" className="btn-primary" disabled={saving}>{saving ? "Guardando…" : "Guardar datos"}</button></div>
-      </form> : <div className="admin-toolbar"><p className="admin-note">En cuentas de administrador puedes gestionar el rol. La edición de datos personales está habilitada para médicos.</p><button type="button" className="btn-outline" disabled={saving || !!pending} onClick={() => setEditing(null)}>Cerrar</button></div>}
+      </form>
     </section>}
     {confirmation && accounts.find(a => a.id === confirmation.id) && <ProfileConfirmation
       original={accounts.find(a => a.id === confirmation.id)!} next={confirmation} saving={saving}
