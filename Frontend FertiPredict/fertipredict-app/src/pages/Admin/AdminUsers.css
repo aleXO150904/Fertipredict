@@ -18,7 +18,7 @@
 .admin-access-button { white-space: nowrap; min-width: 160px; }
 .admin-access-button.revoke { border-color: #dc2626; }
 .admin-access-button.grant { border-color: #16a34a; }
-.admin-users td:last-child { min-width: 200px; }
+.admin-users td:last-child { min-width: 110px; }
 .admin-users .admin-error { color: #dc2626; }
 .admin-note { font-size: 13px; line-height: 1.6; }
 .admin-confirm { padding: 28px; width: min(500px, 92vw); }
@@ -75,3 +75,23 @@
 
 .admin-users .admin-delete-button { color: var(--color-error); border-color: var(--color-error); }
 .admin-profile-confirm .admin-error { color: var(--color-error); margin-top: 16px; }
+
+/* Keep labels and actions legible; narrow screens scroll the table instead of crushing cells. */
+.admin-users .admin-table-wrap table { table-layout: auto; min-width: 1120px; }
+.admin-users .admin-table-wrap th, .admin-users .admin-table-wrap td {
+  vertical-align: middle; line-height: 1.45; word-break: normal; overflow-wrap: normal; padding: 14px 12px;
+}
+.admin-users .admin-table-wrap th:first-child, .admin-users .admin-table-wrap td:first-child { min-width: 170px; }
+.admin-users .admin-email-cell { min-width: 210px; overflow-wrap: anywhere; }
+.admin-users .admin-table-wrap th:nth-child(4), .admin-users .admin-table-wrap td:nth-child(4) { min-width: 160px; }
+.admin-users .admin-table-wrap button, .admin-users .admin-status { white-space: nowrap; word-break: normal; }
+.admin-users .admin-table-wrap button { min-height: 40px; }
+.admin-users .admin-status { min-width: 74px; text-align: center; }
+.admin-role-label { display: inline-block; min-width: 115px; }
+.admin-role-editor { margin: 20px 0; padding-bottom: 20px; border-bottom: 1px solid var(--color-border); }
+.admin-role-editor label { display: grid; gap: 8px; max-width: 360px; font-weight: 600; }
+.admin-role-editor select { width: 100%; min-height: 44px; }
+.admin-role-editor .admin-note { margin-top: 8px; }
+.admin-profile { background: var(--color-surface-solid); }
+.admin-profile .admin-profile-fields { margin-top: 16px; }
+.admin-profile .admin-toolbar { justify-content: flex-end; }

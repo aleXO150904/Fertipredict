@@ -50,6 +50,10 @@ export default function AdminUsers() {
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState<Account | null>(null);
   const [editing, setEditing] = useState<Account | null>(null);
+  const editorRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (editing) editorRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [editing?.id]);
   const [confirmation, setConfirmation] = useState<Account | null>(null);
   const profileInFlight = useRef(false);
   const [profileError, setProfileError] = useState("");
@@ -67,6 +71,7 @@ export default function AdminUsers() {
     try {
       const { data } = await api.put<Account>(`/api/admin/users/${pending.id}/${pendingKind}`, pendingKind === "access" ? { active: pending.active } : { role: pending.role });
       setAccounts(rows => rows.map(row => row.id === data.id ? data : row));
+      if (pendingKind === "role") setEditing(null);
       setPending(null); setMessage(pendingKind === "access" ? (data.active ? "Cuenta activada: el usuario puede iniciar sesión." : "Cuenta desactivada: el usuario ya no puede iniciar sesión y sus sesiones anteriores quedaron invalidadas.") : "Rol actualizado correctamente.");
     } catch (err) {
       setError(axios.isAxiosError(err) && err.response?.status === 409
@@ -123,16 +128,27 @@ export default function AdminUsers() {
     <div className="admin-toolbar"><label>Buscar usuario<input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Nombre o correo electrónico" /></label><label>Estado de la cuenta<select value={status} onChange={e => setStatus(e.target.value)}><option value="all">Todos los usuarios</option><option value="active">Cuentas activas</option><option value="inactive">Cuentas inactivas</option></select></label><button className="btn-outline" onClick={() => void load()} disabled={loading || saving || (!!pending || !!editing)}>Actualizar lista</button></div>
     {error && <p role="alert" className="admin-error">{error}</p>}
     {message && <p role="status">{message}</p>}
-    {loading ? <p role="status">Cargando usuarios…</p> : <div className="admin-table-wrap"><table><thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Días sin iniciar sesión</th><th>Estado</th><th>Permiso de inicio de sesión</th><th>Datos personales</th><th>Eliminar usuario</th></tr></thead><tbody>
-      {rows.map(a => <tr key={a.id}><td><strong>{`${a.names || ""} ${a.lastnames || ""}`.trim() || a.username}</strong>{a.id === user?.id && <small>Tu cuenta</small>}</td><td>{a.username}</td><td><select aria-label={`Rol de ${a.username}`} value={a.role} title={!a.active ? "Activa la cuenta antes de cambiar su rol" : undefined} disabled={!a.active || a.id === user?.id || saving || (!!pending || !!editing)} onChange={e => { setError(""); setPendingKind("role"); setPending({ ...a, role: e.target.value as Account["role"] }); }}><option value="USER">Médico</option><option value="ADMIN">Administrador</option></select>{!a.active && <small>Activa la cuenta para cambiar el rol.</small>}</td><td><strong>{lastLoginLabel(a.lastLoginAt, now)}</strong><small>{lastLoginDate(a.lastLoginAt)}{a.lastLoginAt ? " (Lima)" : ""}</small></td><td><span className={`admin-status ${a.active ? "is-active" : ""}`}>{a.active ? "Activo" : "Inactivo"}</span></td><td><button className={`btn-outline admin-access-button ${a.active ? "revoke" : "grant"}`} aria-label={`${a.active ? "Desactivar" : "Activar"} cuenta de ${a.username}`} title={a.id === user?.id ? "No puedes desactivar tu propia cuenta" : undefined} disabled={a.id === user?.id || saving || (!!pending || !!editing)} onClick={() => { setError(""); setPendingKind("access"); setPending({ ...a, active: !a.active }); }}>{a.active ? "Desactivar cuenta" : "Activar cuenta"}</button><small>{a.active ? "Inicio de sesión permitido" : "Inicio de sesión bloqueado"}</small></td><td>{a.role === "USER" ? <button className="btn-outline" disabled={saving || !!pending || !!editing} aria-label={`Editar datos de ${a.username}`} onClick={() => { setError(""); setProfileError(""); setEditing({ ...a, names: a.names || "", lastnames: a.lastnames || "" }); }}>Editar datos</button> : <span>—</span>}</td><td><button className="btn-outline admin-delete-button" disabled={a.id === user?.id || saving || !!pending || !!editing || creating || !!deleting} title={a.id === user?.id ? "No puedes eliminar tu propia cuenta" : undefined} aria-label={`Eliminar usuario ${a.username}`} onClick={() => { setError(""); setMessage(""); setDeleting(a); }}>Eliminar</button></td></tr>)}
+    {loading ? <p role="status">Cargando usuarios…</p> : <div className="admin-table-wrap"><table><thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Días sin iniciar sesión</th><th>Estado</th><th>Permiso de inicio de sesión</th><th>Editar datos</th><th>Eliminar usuario</th></tr></thead><tbody>
+      {rows.map(a => <tr key={a.id}><td><strong>{`${a.names || ""} ${a.lastnames || ""}`.trim() || a.username}</strong>{a.id === user?.id && <small>Tu cuenta</small>}</td><td className="admin-email-cell">{a.username}</td><td><span className="admin-role-label">{a.role === "ADMIN" ? "Administrador" : "Médico especialista"}</span></td><td><strong>{lastLoginLabel(a.lastLoginAt, now)}</strong><small>{lastLoginDate(a.lastLoginAt)}{a.lastLoginAt ? " (Lima)" : ""}</small></td><td><span className={`admin-status ${a.active ? "is-active" : ""}`}>{a.active ? "Activo" : "Inactivo"}</span></td><td><button className={`btn-outline admin-access-button ${a.active ? "revoke" : "grant"}`} aria-label={`${a.active ? "Desactivar" : "Activar"} cuenta de ${a.username}`} title={a.id === user?.id ? "No puedes desactivar tu propia cuenta" : undefined} disabled={a.id === user?.id || saving || (!!pending || !!editing)} onClick={() => { setError(""); setPendingKind("access"); setPending({ ...a, active: !a.active }); }}>{a.active ? "Desactivar cuenta" : "Activar cuenta"}</button><small>{a.active ? "Inicio de sesión permitido" : "Inicio de sesión bloqueado"}</small></td><td>{a.id !== user?.id ? <button className="btn-outline" disabled={saving || !!pending || !!editing} aria-label={`Editar datos de ${a.username}`} onClick={() => { setError(""); setProfileError(""); setEditing({ ...a, names: a.names || "", lastnames: a.lastnames || "" }); }}>Editar datos</button> : <span>—</span>}</td><td><button className="btn-outline admin-delete-button" disabled={a.id === user?.id || saving || !!pending || !!editing || creating || !!deleting} title={a.id === user?.id ? "No puedes eliminar tu propia cuenta" : undefined} aria-label={`Eliminar usuario ${a.username}`} onClick={() => { setError(""); setMessage(""); setDeleting(a); }}>Eliminar</button></td></tr>)}
       {!rows.length && <tr><td colSpan={8}>No se encontraron usuarios.</td></tr>}
     </tbody></table></div>}
     <p className="admin-note">El contador muestra periodos completos de 24 horas desde el último inicio de sesión exitoso. No indica si el usuario está conectado actualmente. Las cuentas sin historial mostrarán «Sin registro» hasta su próximo ingreso. Usa «Actualizar lista» para consultar nuevos ingresos.</p>
     <p className="admin-note">Al desactivar una cuenta se bloquea el inicio de sesión y se invalidan sus sesiones anteriores. Tu propia cuenta conserva el acceso de administrador.</p>
-    {editing && <section className="admin-profile" aria-labelledby="admin-profile-title">
-      <h2 id="admin-profile-title">Editar médico especialista</h2>
+    {editing && <section ref={editorRef} className="admin-profile" aria-labelledby="admin-profile-title">
+      <h2 id="admin-profile-title">Editar datos del usuario</h2>
       <p>{accounts.find(a => a.id === editing.id)?.username}</p>
-      <form onSubmit={reviewProfile}>
+      <div className="admin-role-editor">
+        <label>Rol del usuario<select aria-describedby="admin-role-help" value={editing.role}
+          disabled={!editing.active || editing.id === user?.id || saving || !!pending || !!confirmation
+            || editing.names !== (accounts.find(a => a.id === editing.id)?.names || "")
+            || editing.lastnames !== (accounts.find(a => a.id === editing.id)?.lastnames || "")
+            || editing.username !== accounts.find(a => a.id === editing.id)?.username}
+          onChange={e => { setError(""); setPendingKind("role"); setPending({ ...editing, role: e.target.value as Account["role"] }); }}>
+          <option value="USER">Médico especialista</option><option value="ADMIN">Administrador</option>
+        </select></label>
+        <p id="admin-role-help" className="admin-note">{!editing.active ? "Activa la cuenta para cambiar su rol." : "El cambio de rol se confirma por separado. Si modificas los datos personales, guárdalos antes de cambiar el rol."}</p>
+      </div>
+      {editing.role === "USER" ? <form onSubmit={reviewProfile}>
         <div className="admin-profile-fields">
           <label>Nombre<input autoFocus required maxLength={255} autoComplete="given-name" value={editing.names} disabled={saving} onChange={e => setEditing({ ...editing, names: e.target.value })} /></label>
           <label>Apellido<input required maxLength={255} autoComplete="family-name" value={editing.lastnames} disabled={saving} onChange={e => setEditing({ ...editing, lastnames: e.target.value })} /></label>
@@ -141,7 +157,7 @@ export default function AdminUsers() {
         <p className="admin-note">Si cambias el correo, el médico deberá volver a iniciar sesión con el nuevo correo y su contraseña actual. Los enlaces anteriores de recuperación quedarán invalidados.</p>
         {profileError && <p className="admin-error" role="alert">{profileError}</p>}
         <div className="admin-toolbar"><button type="button" className="btn-outline" disabled={saving} onClick={() => setEditing(null)}>Cancelar</button><button type="submit" className="btn-primary" disabled={saving}>{saving ? "Guardando…" : "Guardar datos"}</button></div>
-      </form>
+      </form> : <div className="admin-toolbar"><p className="admin-note">En cuentas de administrador puedes gestionar el rol. La edición de datos personales está habilitada para médicos.</p><button type="button" className="btn-outline" disabled={saving || !!pending} onClick={() => setEditing(null)}>Cerrar</button></div>}
     </section>}
     {confirmation && accounts.find(a => a.id === confirmation.id) && <ProfileConfirmation
       original={accounts.find(a => a.id === confirmation.id)!} next={confirmation} saving={saving}
