@@ -46,6 +46,11 @@ export function createPredictionPdf(pred: PredictionDTO, featureLabels: Record<s
     ["Nivel de riesgo", risk[pred.riskLevel?.toUpperCase()] ?? text(pred.riskLevel)],
     ["Probabilidad de alto riesgo", predictionProbability(pred.probability)],
   ]);
+  const level = pred.riskLevel?.toUpperCase();
+  const hasResult = ["LOW", "MODERATE", "MEDIUM", "HIGH"].includes(level);
+  section("Resumen de la predicción", [["Lectura del resultado", hasResult
+    ? `El modelo clasificó esta evaluación con riesgo ${risk[level].toLowerCase()}. La probabilidad estimada de pertenecer a la categoría de alto riesgo es ${predictionProbability(pred.probability)}; no es la probabilidad de la categoría mostrada cuando el resultado es bajo o medio.`
+    : "No hay una clasificación de riesgo definitiva disponible para interpretar."]]);
   function patient(title: string, p: PatientDTO | null | undefined) {
     if (!p) { section(title, [["Datos del paciente", "No registrados"]]); return; }
     const rows: Row[] = [
@@ -69,8 +74,15 @@ export function createPredictionPdf(pred: PredictionDTO, featureLabels: Record<s
   patient("Paciente masculino", pred.couple?.malePatient);
   patient("Paciente femenino", pred.couple?.femalePatient);
   const factors = Object.entries(pred.explanation ?? {}).filter(([, value]) => Number.isFinite(value))
-    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
-  section("Explicación del modelo (SHAP)", factors.length ? factors.map(([key, value]): Row => [featureLabels[key] ?? key, `${value > 0 ? "+" : ""}${value.toFixed(4)}`]) : [["Factores", "No hay explicación disponible"]]);
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 5);
+  section("Explicabilidad: top 5 de factores más influyentes", factors.length ? factors.map(([key, value], index): Row => [
+    `${index + 1}. ${featureLabels[key] ?? key.replace(/_/g, " ")}`,
+    `${value > 0 ? "+" : ""}${value.toFixed(4)} — ${value > 0 ? "A favor de la clase predicha" : value < 0 ? "En contra de la clase predicha" : "Sin contribución registrada"}`,
+  ]) : [["Factores", "No hay explicación disponible"]]);
+  if (factors.length) section("Cómo leer los factores", [["Explicación breve",
+    `Se muestran hasta cinco factores de la explicación SHAP disponible, ordenados por la magnitud de su contribución (valor absoluto). ${factors.every(([, value]) => value === 0)
+      ? "Todos los valores registrados son cero: no se identifica un factor predominante."
+      : `Entre ellos, ${featureLabels[factors[0][0]] ?? factors[0][0].replace(/_/g, " ")} presenta la mayor magnitud.`} Un valor positivo favorece la clase predicha y uno negativo la reduce respecto a la referencia de la explicación. Si la clase es bajo riesgo, un valor positivo favorece esa clase; no significa un aumento del alto riesgo.`]]);
   section("Sobre este reporte", [["Interpretación", "Los valores SHAP son contribuciones a la salida del modelo para la clase predicha. No representan causalidad ni porcentajes de pacientes."],
     ["Uso del resultado", "Estimación del modelo para apoyar la evaluación profesional. No constituye un diagnóstico."]]);
   const pages = doc.getNumberOfPages();
