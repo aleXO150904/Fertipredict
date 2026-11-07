@@ -147,8 +147,12 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
     } catch (err: unknown) {
       const status = axios.isAxiosError(err) ? err.response?.status : undefined;
       const serverMessage = axios.isAxiosError(err) ? err.response?.data?.message : undefined;
+      const code = axios.isAxiosError(err) ? err.response?.data?.code : undefined;
+      const reference = axios.isAxiosError(err) ? err.response?.data?.reference : undefined;
       setError(status === 401
         ? "No se pudo autorizar la solicitud. Si tu sesión sigue activa, conserva los datos y vuelve a intentarlo."
+        : typeof serverMessage === "string" && typeof code === "string" && code.startsWith("ML_")
+          ? `${serverMessage}${typeof reference === "string" ? ` Referencia: ${reference}` : ""}`
         : typeof serverMessage === "string" && serverMessage.startsWith("No se pudo guardar la predicción")
           ? serverMessage
           : status === 502 || status === 503 || status === 504

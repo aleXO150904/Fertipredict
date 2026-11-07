@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice(assignableTypes = PredictionController.class)
 public class PredictionErrorHandler {
+    @ExceptionHandler(com.fertipredict.app.MLClient.MLServiceException.class)
+    public ResponseEntity<Map<String, String>> modelFailure(com.fertipredict.app.MLClient.MLServiceException ex) {
+        return ResponseEntity.status(ex.status).body(Map.of("message", ex.getMessage(),
+            "code", ex.code, "reference", ex.reference));
+    }
     @ExceptionHandler(org.springframework.web.client.RestClientException.class)
     public ResponseEntity<Map<String, String>> modelUnavailable(org.springframework.web.client.RestClientException ex) {
         return ResponseEntity.status(502).body(Map.of("message",
