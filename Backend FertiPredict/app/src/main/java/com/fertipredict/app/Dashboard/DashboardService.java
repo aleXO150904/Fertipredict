@@ -58,8 +58,8 @@ public class DashboardService {
         FEATURE_CATEGORY_MAP.put("Tipo_Alimentacion_Femenino", "Estilo de Vida");
 
         // Antecedentes Familiares
-        FEATURE_CATEGORY_MAP.put("Historial_Familiar_Infertilidad_Masculino", "Antecedentes Familiares");
-        FEATURE_CATEGORY_MAP.put("Historial_Familiar_Infertilidad_Femenino", "Antecedentes Familiares");
+        FEATURE_CATEGORY_MAP.put("Historial_Familiar_Infertilidad_Masculino", "Otros");
+        FEATURE_CATEGORY_MAP.put("Historial_Familiar_Infertilidad_Femenino", "Otros");
 
         // Exposición Ambiental
         FEATURE_CATEGORY_MAP.put("Exposicion_Toxicos_Calor_Masculino", "Exposición Ambiental");
@@ -146,33 +146,11 @@ public class DashboardService {
 
         if (totalAvg == 0) return List.of();
 
-        List<Map.Entry<String, Double>> sorted = categoryAvg.entrySet().stream()
-                .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
-                .collect(Collectors.toList());
-
-        // Top 5, resto agrupado en "Otros"
+        // CP036 uses stable categories: never hide Edad in a top-N grouping.
         List<FactorItemDTO> result = new ArrayList<>();
-        double othersSum = 0;
-
-        for (int i = 0; i < sorted.size(); i++) {
-            Map.Entry<String, Double> entry = sorted.get(i);
-            double pct = (entry.getValue() / totalAvg) * 100;
-
-            if (i < 5) {
-                result.add(FactorItemDTO.builder()
-                        .factor(entry.getKey())
-                        .percentage(round1(pct))
-                        .build());
-            } else {
-                othersSum += pct;
-            }
-        }
-
-        if (othersSum > 0) {
-            result.add(FactorItemDTO.builder()
-                    .factor("Otros")
-                    .percentage(round1(othersSum))
-                    .build());
+        for (String category : List.of("Factor Masculino", "Factor Femenino", "Exposición Ambiental", "Estilo de Vida", "Edad", "Otros")) {
+            double pct = categoryAvg.getOrDefault(category, 0.0) / totalAvg * 100;
+            result.add(FactorItemDTO.builder().factor(category).percentage(round1(pct)).build());
         }
 
         return result;

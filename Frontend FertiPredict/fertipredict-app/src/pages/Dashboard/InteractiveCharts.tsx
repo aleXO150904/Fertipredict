@@ -19,7 +19,7 @@ export function LineChart({ data }: { data: Trend[] }) {
   const max = Math.max(1, ...data.map(d => Math.max(d.predictions, d.detections)));
   const x = (i: number) => data.length === 1 ? 275 : 50 + i / (data.length - 1) * 450;
   const y = (n: number) => 205 - n / max * 175;
-  const selected = active === null ? null : data[active];
+  const selected = active === null ? data[data.length - 1] : data[active];
   const describe = (d: Trend) => `${monthLabel(d.month)}: ${d.predictions} predicciones; ${d.detections} de alto riesgo (${d.predictions ? (100 * d.detections / d.predictions).toFixed(1) : "0"}%).`;
   return <>
     <svg className="db-chart-svg" viewBox="0 0 550 248" aria-label="Predicciones y alto riesgo por mes">
@@ -39,7 +39,7 @@ export function LineChart({ data }: { data: Trend[] }) {
       </g>)}
     </svg>
     <div className="db-chart-legend"><span>● Predicciones</span><span>● Alto riesgo</span></div>
-    <Detail text={selected ? describe(selected) : ""} />
+    <Detail text={selected ? describe(selected) : "No hay datos mensuales en este periodo."} />
     <details className="db-data-table"><summary>Ver datos por mes</summary><table><thead><tr><th>Mes</th><th>Predicciones</th><th>Alto riesgo</th></tr></thead><tbody>{data.map(d => <tr key={d.month}><td>{monthLabel(d.month)}</td><td>{d.predictions}</td><td>{d.detections}</td></tr>)}</tbody></table></details>
   </>;
 }
@@ -62,7 +62,7 @@ export function BarChart({ data }: { data: RiskBar[] }) {
         <text x={125 + i * 150} y="229" textAnchor="middle" fill={ink} fontSize="11">{d.label}</text>
       </g>)}
     </svg>
-    <Detail text={active === null ? "" : describe(data[active])} />
+    <Detail text={active === null ? (data.length ? data.map(describe).join(" ") : "No hay predicciones en este periodo.") : describe(data[active])} />
   </>;
 }
 
@@ -89,6 +89,7 @@ export function PieChart({ data }: { data: Factor[] }) {
       </svg>
       <div className="db-factor-legend">{data.map((d, i) => <button type="button" key={d.factor + i} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)} onClick={() => setActive(i)}><span style={{ backgroundColor: colors[i % colors.length] }} />{d.factor} <strong>{d.percentage}%</strong></button>)}</div>
     </>}
-    <Detail text={active === null ? "" : describe(data[active])} />
+    <p className="db-chart-detail">Los porcentajes representan el peso relativo SHAP: se calcula la media de las contribuciones absolutas de cada categoría y se normaliza entre categorías. No representan porcentajes de pacientes ni causalidad. «Otros» incluye antecedentes familiares y factores no clasificados. Las categorías sin contribución aparecen con 0%.</p>
+    <Detail text={active === null ? (total ? "Selecciona una categoría para consultar su porcentaje; la leyenda muestra todas las categorías." : "No hay contribuciones SHAP para calcular porcentajes.") : describe(data[active])} />
   </>;
 }

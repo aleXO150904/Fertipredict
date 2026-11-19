@@ -67,4 +67,18 @@ class DashboardServiceTest {
         assertThrows(ResponseStatusException.class, () -> new DateRange(LocalDate.now(), LocalDate.now().plusDays(1)));
         assertThrows(ResponseStatusException.class, () -> new DateRange(LocalDate.of(2000, 1, 1), LocalDate.now()));
     }
+    @Test void cp036KeepsSixCategoriesEvenWhenAgeHasSmallContribution() {
+        rows(List.of(prediction("2026-01-01T12:00:00", "LOW",
+            "{\"Edad_Masculino\":0.001,\"Concentracion_Esperma\":0.3,\"PCOS\":0.2,\"Exposicion_Toxicos_Calor_Masculino\":0.1,\"IMC_Masculino\":0.1,\"Historial_Familiar_Infertilidad_Masculino\":0.2,\"unknown\":0.1}")));
+        var factors = service.getFactorDistribution(range);
+        assertEquals(List.of("Factor Masculino", "Factor Femenino", "Exposición Ambiental", "Estilo de Vida", "Edad", "Otros"),
+            factors.stream().map(FactorItemDTO::getFactor).toList());
+        assertTrue(factors.get(4).getPercentage() > 0);
+        assertEquals(100, factors.stream().mapToDouble(FactorItemDTO::getPercentage).sum(), 0.3);
+    }
+    @Test void cp036CountsComeFromRecordsNotExampleValues() {
+        rows(List.of(prediction("2026-01-01T12:00:00", "LOW", null), prediction("2026-01-01T13:00:00", "MODERATE", null), prediction("2026-01-02T12:00:00", "HIGH", null)));
+        var risk = service.getRiskDistribution(range);
+        assertEquals(1, risk.getLow()); assertEquals(1, risk.getModerate()); assertEquals(1, risk.getHigh());
+    }
 }
