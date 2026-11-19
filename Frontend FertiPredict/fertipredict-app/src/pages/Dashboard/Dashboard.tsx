@@ -129,9 +129,9 @@ export default function DashboardPage() {
           </div>
           <section className="db-chart-card"><h2 className="db-chart-title">Categorización por nivel de riesgo</h2>
             <BarChart key={range.start + range.end + updated} data={[
-              { label: "Bajo riesgo", value: data.risk.low, color: "#4CAF8E" },
-              { label: "Riesgo medio", value: data.risk.moderate, color: "#F59E0B" },
               { label: "Alto riesgo", value: data.risk.high, color: "#F472B6" },
+              { label: "Riesgo medio", value: data.risk.moderate, color: "#F59E0B" },
+              { label: "Bajo riesgo", value: data.risk.low, color: "#4CAF8E" },
             ]} /></section>
         </>}
         <p className="db-period">Actualizado: {updated}</p>
