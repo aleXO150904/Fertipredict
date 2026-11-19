@@ -92,32 +92,34 @@ function DetailField({ label, value }: { label: string; value: string }) {
 }
 
 const FEATURE_LABELS: Record<string, string> = {
-  Edad_Masculino: "Edad masculina",
-  IMC_Masculino: "IMC masculino",
-  Concentracion_Esperma: "Concentración espermática",
-  Motilidad_Espermatica: "Motilidad espermática",
-  Morfologia_Espermatica: "Morfología espermática",
-  Varicocele: "Varicocele",
-  Exposicion_Toxicos_Calor_Masculino: "Exposición a tóxicos (M)",
-  Fumador_Masculino: "Tabaquismo masculino",
-  Consumo_Alcohol_Masculino: "Alcohol masculino",
-  Nivel_Ejercicio_Masculino: "Ejercicio masculino",
-  Tipo_Alimentacion_Masculino: "Alimentación masculina",
-  Historial_Familiar_Infertilidad_Masculino: "Historial familiar (M)",
-  Edad_Femenino: "Edad femenina",
-  IMC_Femenino: "IMC femenino",
-  Ciclo_Menstrual: "Ciclo menstrual",
-  PCOS: "PCOS (SOP)",
-  Endometriosis: "Endometriosis",
-  Hormona_AMH: "Hormona AMH",
-  Hormona_FSH: "Hormona FSH",
-  Obstruccion_Tubaria: "Obstrucción tubárica",
-  Abortos_Previos: "Abortos previos",
-  Fumador_Femenino: "Tabaquismo femenino",
-  Consumo_Alcohol_Femenino: "Alcohol femenino",
-  Nivel_Ejercicio_Femenino: "Ejercicio femenino",
-  Tipo_Alimentacion_Femenino: "Alimentación femenina",
-  Historial_Familiar_Infertilidad_Femenino: "Historial familiar (F)",
+  Edad_Masculino: "Edad (Masculino)",
+  IMC_Masculino: "IMC (Masculino)",
+  Concentracion_Esperma: "Concentración espermática (Masculino)",
+  Motilidad_Espermatica: "Motilidad espermática (Masculino)",
+  Morfologia_Espermatica: "Morfología espermática (Masculino)",
+  Varicocele: "Varicocele (Masculino)",
+  Exposicion_Toxicos_Calor_Masculino: "Exposición a tóxicos (Masculino)",
+  Fumador_Masculino: "Tabaquismo (Masculino)",
+  Consumo_Alcohol_Masculino: "Alcohol (Masculino)",
+  Nivel_Ejercicio_Masculino: "Ejercicio (Masculino)",
+  Tipo_Alimentacion_Masculino: "Alimentación (Masculino)",
+  Historial_Familiar_Infertilidad_Masculino: "Historial familiar (Masculino)",
+  Edad_Femenino: "Edad (Femenino)",
+  IMC_Femenino: "IMC (Femenino)",
+  Ciclo_Menstrual: "Ciclo menstrual (Femenino)",
+  PCOS: "PCOS (SOP) (Femenino)",
+  Endometriosis: "Endometriosis (Femenino)",
+  Hormona_AMH: "Hormona AMH (Femenino)",
+  Hormona_FSH: "Hormona FSH (Femenino)",
+  Obstruccion_Tubaria: "Obstrucción tubárica (Femenino)",
+  Abortos_Previos: "Abortos previos (Femenino)",
+  Fumador_Femenino: "Tabaquismo (Femenino)",
+  Consumo_Alcohol_Femenino: "Alcohol (Femenino)",
+  Nivel_Ejercicio_Femenino: "Ejercicio (Femenino)",
+  Tipo_Alimentacion_Femenino: "Alimentación (Femenino)",
+  Historial_Familiar_Infertilidad_Femenino: "Historial familiar (Femenino)",
+  "Hormona_Antimulleriana_(amh)": "Hormona AMH (Femenino)",
+  "hormona_foliculoestimulante_(fsh)": "Hormona FSH (Femenino)",
 };
 
 function getTop5(explanation?: Record<string, number>) {
@@ -205,7 +207,7 @@ function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void
 
         <div className="modal-body">
           {pred.explanation && getTop5(pred.explanation).length > 0 && (
-            <div className="modal-patient-section shap-section" style={{ marginBottom: '24px', backgroundColor: 'var(--color-bg)', padding: '16px', borderRadius: '8px' }}>
+            <div className="modal-patient-section shap-section prediction-explanation" style={{ marginBottom: '24px', backgroundColor: 'var(--color-bg)', padding: '16px', borderRadius: '8px' }}>
               <h4 className="modal-patient-title" style={{ marginBottom: '12px' }}>Explicación del Modelo (Top 5 factores)</h4>
               {getTop5(pred.explanation).map(([feature, value]) => {
                 const maxAbs = Math.abs(getTop5(pred.explanation)[0][1]);
@@ -213,8 +215,8 @@ function ViewModal({ pred, onClose }: { pred: PredictionDTO; onClose: () => void
                 const isPositive = value >= 0;
                 const label = FEATURE_LABELS[feature] || feature;
                 return (
-                  <div className="shap-row" key={feature} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', fontSize: '13px' }}>
-                    <div className="shap-label" title={label} style={{ flex: '0 0 160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-ink)' }}>{label}</div>
+                  <div className="shap-row" key={feature} style={{ alignItems: 'center', gap: '12px', marginBottom: '8px', fontSize: '13px' }}>
+                    <div className="shap-label" title={label} style={{ color: 'var(--color-ink)' }}>{label}</div>
                     <div className="shap-bar-wrap" style={{ flex: 1, height: '6px', backgroundColor: 'var(--color-border)', borderRadius: '3px', position: 'relative' }}>
                       <div
                         className={`shap-bar ${isPositive ? "positive" : "negative"}`}

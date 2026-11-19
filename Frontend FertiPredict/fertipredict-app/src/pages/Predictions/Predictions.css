@@ -348,3 +348,29 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* Keep the factor and its patient sex visible, including on small screens. */
+.prediction-explanation .shap-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.3fr) minmax(40px, 1fr) 60px 110px;
+}
+.prediction-explanation .shap-label {
+  width: auto;
+  min-width: 0;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+@media (max-width: 640px) {
+  .prediction-explanation .shap-row {
+    grid-template-columns: minmax(0, 1fr) 60px;
+  }
+  .prediction-explanation .shap-label {
+    grid-column: 1 / -1;
+  }
+  .prediction-explanation .shap-dir {
+    display: block;
+    grid-column: 1 / -1;
+  }
+}
