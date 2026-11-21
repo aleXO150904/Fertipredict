@@ -1,3 +1,4 @@
+import { withModelRetry } from "../../utils/modelRetry";
 import axios from "axios";
 import { formatProbability } from "../../utils/probability";
 import { useState, type FormEvent } from "react";
@@ -67,11 +68,14 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
   const [femaleFamilyHistory, setFemaleFamilyHistory] = useState(boolToStr(ff?.familyInfertilityHistory));
 
   const [loading, setLoading] = useState(false);
+  const [waitingForModel, setWaitingForModel] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ riskLevel: string; probability: number; explanation?: Record<string, number> } | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (loading) return;
+    setWaitingForModel(false);
     setError(null);
     setResult(null);
 
@@ -137,9 +141,12 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
         femalePatient,
       };
 
-      const res = isEditing
-        ? await predictionService.update(predictionToEdit!.id, { couple })
-        : await predictionService.create({ couple });
+      const res = await withModelRetry(
+        () => isEditing
+          ? predictionService.update(predictionToEdit!.id, { couple })
+          : predictionService.create({ couple }),
+        () => setWaitingForModel(true),
+      );
 
       setResult({ riskLevel: res.riskLevel, probability: res.probability, explanation: res.explanation });
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -486,6 +493,14 @@ export default function NewPrediction({ onBack, predictionToEdit }: NewPredictio
           </div>
         </div>
 
+        {loading && (
+          <div role="status" aria-live="polite" className="model-loading-status">
+            <span className="spinner-small" aria-hidden="true" />
+            <span>{waitingForModel
+              ? "Esperando al modelo predictivo. Estamos reintentando la conexión automáticamente; puede tardar varios minutos. Mantén esta pantalla abierta."
+              : "Conectando con el modelo y generando la predicción. Mantén esta pantalla abierta."}</span>
+          </div>
+        )}
         {error && (
           <div className="form-error">
             {error}
